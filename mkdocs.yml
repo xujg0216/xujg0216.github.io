@@ -3,7 +3,7 @@ site_url: https://xjg-0216.github.io
 site_author: xujg
 site_description: XUJG Site
 
-# [Navigtion]
+# [Navigation]
 nav:
   - GIT:
     - GIT/01-git.md
@@ -15,6 +15,7 @@ nav:
     - ubuntu:
       - TOOL/ubuntu/01-timeshift.md
       - TOOL/ubuntu/02-apt.md
+      - TOOL/ubuntu/03-proxy.md
       - TOOL/ubuntu/04-byobu.md
       - TOOL/ubuntu/05-mount.md
       - TOOL/ubuntu/06-tar.md
@@ -28,40 +29,48 @@ nav:
       - TOOL/network.md
     - vscode远程免密连接:
       - TOOL/vscode-remote-auto-conn.md
-  # - 算法:
-  #   - Algorithm/01-kalman.md  
+  - 算法:
+    - Algorithm/01-kalman.md
   - 图像处理:
     - ISP:
       - IMAGE_PROCESS/isp/isp_pipeline.md
     - opencv:
       - IMAGE_PROCESS/opencv/01-mat.md
-    - ByteTrack:
-      - IMAGE_PROCESS/bytetrack.md
-    - NetVLAD:
-      - IMAGE_PROCESS/NetVLAD.md
     - IMAGE_PROCESS/01-img0.md
     - IMAGE_PROCESS/02-OpenDroneMap.md
     - IMAGE_PROCESS/03-reprojection.md
     - IMAGE_PROCESS/04-ord.md
+    - IMAGE_PROCESS/05-stitch.md
+    - IMAGE_PROCESS/06-img.md
+    - IMAGE_PROCESS/07-bytetrack.md
+    - IMAGE_PROCESS/08-NetVLAD.md
+  - 深度学习:
+    - deepLearning/01-transformer.md
+    - deepLearning/02-ViT.md
+    - deepLearning/03-bert.md
+    - deepLearning/04-mae.md
+    - deepLearning/05-gpt.md
+    - deepLearning/06-rnn_lstm.md
+    - deepLearning/07-triplet_loss.md
   - LLM:
-    # - LLM/00-LLM简介.md
-    # - LLM/01-模型文件格式以及框架.md
     - LLM/00-LLM学习路线.md
-    - LLM/02-ollama使用.md
-    - LLM/03-DDPM.md
-    - LLM/04-bigram_language_model.md
-    - LLM/05-miniGPT.md
-    - LLM/06-nanoGPT.md
-    - LLM/07-mfu.md
+    - LLM/01-LLM简介.md
+    - LLM/02-模型文件格式以及框架.md
+    - LLM/03-ollama使用.md
+    - LLM/04-DDPM.md
+    - LLM/05-bigram_language_model.md
+    - LLM/06-miniGPT.md
+    - LLM/07-nanoGPT.md
+    - LLM/08-mfu.md
     - RAG:
-      - LLM/RAG/[1]_rag_setup_overview_explained.md
-      - LLM/RAG/[2]_rag_with_multi_query_explained.md
-      - LLM/RAG/[3]_rag_routing_and_query_construction_explained.md
-      - LLM/RAG/[4]_rag_indexing_and_advanced_retrieval_explained.md
-      - LLM/RAG/[5]_rag_retrieval_and_reranking_explained.md
+      - LLM/RAG/01-rag-setup-overview.md
+      - LLM/RAG/02-rag-multi-query.md
+      - LLM/RAG/03-rag-routing-query.md
+      - LLM/RAG/04-rag-indexing-retrieval.md
+      - LLM/RAG/05-rag-retrieval-reranking.md
   - C++:
-    - tool:
-      - C++/vscode/00-make.md 
+    - 编译工具链:
+      - C++/vscode/00-make.md
       - C++/vscode/01-g++.md
       - C++/vscode/02-compile.md
       - C++/vscode/03-dbg.md
@@ -70,12 +79,12 @@ nav:
       - C++/vscode/06-cmake-compile-step.md
       - C++/vscode/07-cmake-compile.md
       - C++/vscode/08-vscode-debug.md
-      - C++/vscode/a1-vscode-compile.md
+      - C++/vscode/09-vscode-appendix.md
     - 语法:
+      - C++/00-stl.md
       - C++/01-class1.md
       - C++/02-class2.md
       - C++/03-class3.md
-      - C++/00-stl.md
       - C++/04-memory.md
       - C++/05-argv.md
       - C++/06-char.md
@@ -86,33 +95,33 @@ nav:
       - C++/11-define.md
       - C++/12-multi_thread.md
       - C++/13-lambda.md
-      - C++/14-std_function.md
-      - C++/15-l_r_value.md
-      - C++/16-function_template.md
-      - C++/question.md
-      - C++/hdf5.md
-  # - 计算机网络:
-  #   - computer_network/01-client_server.md
+      - C++/14-linking.md
+      - C++/15-std_function.md
+      - C++/16-l_r_value.md
+      - C++/17-function_template.md
+      - C++/18-std_bind.md
+      - C++/19-std_result_of.md
+      - C++/20-std_packaged_task.md
+      - C++/21-hdf5.md
+      - C++/22-question.md
+      - C++/23-read.md
+  - 计算机网络:
+    - computer_network/01-client_server.md
   - UAV:
+    - UAV/00-intro.md
     - UAV/01-elevation.md
     - UAV/02-Flight_attitude.md
     - UAV/03-livox_ros_driver.md
-    - UAV/04-intro.md
   - 模型部署:
     - deploy/01-rknn.md
-    # - deploy/onnx.md
-    # - deploy/video.md
-    # - deploy/npu.md
-    # - deploy/cpu.md
+    - deploy/02-onnx.md
+    - deploy/03-video.md
+    - deploy/04-npu.md
+    - deploy/05-cpu.md
+    - deploy/06-adbd.md
+    - deploy/07-faiss-running-time.md
   - 其他:
     - Learn/index.md
-  - deepLearning:
-    - deepLearning/01-transformer.md
-    - deepLearning/02-ViT.md
-    - deepLearning/03-bert.md
-    - deepLearning/04-mae.md
-    - deepLearning/05-gpt.md
-    - deepLearning/triplet_loss.md
 
 # [UI]
 # [top]
@@ -167,7 +176,7 @@ theme:
     # [点击按钮跳转至 GitHub 修改 Markdown 源文件]
     # https://squidfunk.github.io/mkdocs-material/setup/adding-a-git-repository/#code-actions
     - content.action.edit
-    #痕迹导航
+    # 痕迹导航
     - navigation.path
   language: zh # 一些提示性的文字会变成中文
   icon:
@@ -245,12 +254,11 @@ markdown_extensions:
   - pymdownx.emoji  # 支持Emoji
   # - autolink  # 自动将URL转换为链接
   # - headerid  # 为标题添加锚点
-  # - pymdownx.charts  # 支持插入图表fsss
+  # - pymdownx.charts  # 支持插入图表
   # - tasklist  # 支持任务列表语法
   - pymdownx.critic
   - pymdownx.caret
   - pymdownx.keys
-  - def_list
   - pymdownx.tasklist:
       custom_checkbox: true
 extra_javascript:
