@@ -27,43 +27,6 @@ nav:
       - TOOL/dev/vscode-remote-auto-conn.md
     - RK3588:
       - TOOL/rk3588.md
-  - 图像处理:
-    - ISP:
-      - IMAGE_PROCESS/isp/isp_pipeline.md
-    - opencv:
-      - IMAGE_PROCESS/opencv/01-mat.md
-    - IMAGE_PROCESS/01-img0.md
-    - IMAGE_PROCESS/02-OpenDroneMap.md
-    - IMAGE_PROCESS/03-reprojection.md
-    - IMAGE_PROCESS/04-ord.md
-    - IMAGE_PROCESS/05-stitch.md
-    - IMAGE_PROCESS/06-img.md
-    - IMAGE_PROCESS/07-bytetrack.md
-    - IMAGE_PROCESS/08-NetVLAD.md
-  - 深度学习:
-    - deepLearning/01-transformer.md
-    - deepLearning/02-ViT.md
-    - deepLearning/03-bert.md
-    - deepLearning/04-mae.md
-    - deepLearning/05-gpt.md
-    - deepLearning/06-rnn_lstm.md
-    - deepLearning/07-triplet_loss.md
-  - LLM:
-    - LLM/00-LLM学习路线.md
-    - LLM/01-LLM简介.md
-    - LLM/02-模型文件格式以及框架.md
-    - LLM/03-ollama使用.md
-    - LLM/04-DDPM.md
-    - LLM/05-bigram_language_model.md
-    - LLM/06-miniGPT.md
-    - LLM/07-nanoGPT.md
-    - LLM/08-mfu.md
-    - RAG:
-      - LLM/RAG/01-rag-setup-overview.md
-      - LLM/RAG/02-rag-multi-query.md
-      - LLM/RAG/03-rag-routing-query.md
-      - LLM/RAG/04-rag-indexing-retrieval.md
-      - LLM/RAG/05-rag-retrieval-reranking.md
   - C++:
     - 编译工具链:
       - C++/vscode/00-make.md
@@ -101,11 +64,35 @@ nav:
       - C++/21-hdf5.md
       - C++/22-question.md
       - C++/23-read.md
-  - UAV:
-    - UAV/00-intro.md
-    - UAV/01-elevation.md
-    - UAV/02-Flight_attitude.md
-    - UAV/03-livox_ros_driver.md
+  - 传统图像处理:
+    - classical-cv/01-isp-pipeline.md
+    - classical-cv/02-opencv-mat.md
+    - classical-cv/03-imaging-basics.md
+  - 深度学习基础:
+    - deep-learning/01-transformer.md
+    - deep-learning/02-ViT.md
+    - deep-learning/03-bert.md
+    - deep-learning/04-mae.md
+    - deep-learning/05-gpt.md
+    - deep-learning/06-rnn_lstm.md
+    - deep-learning/07-DDPM.md
+    - deep-learning/08-bigram.md
+  - 算法:
+    - LLM:
+      - algorithms/llm/00-LLM学习路线.md
+      - algorithms/llm/03-ollama使用.md
+      - algorithms/llm/06-miniGPT.md
+      - algorithms/llm/07-nanoGPT.md
+      - algorithms/llm/08-mfu.md
+      - RAG:
+        - algorithms/llm/rag/01-rag-setup-overview.md
+        - algorithms/llm/rag/02-rag-multi-query.md
+        - algorithms/llm/rag/03-rag-routing-query.md
+        - algorithms/llm/rag/04-rag-indexing-retrieval.md
+        - algorithms/llm/rag/05-rag-retrieval-reranking.md
+    - 计算机视觉:
+      - algorithms/cv/01-bytetrack.md
+      - algorithms/cv/02-netvlad.md
   - 模型部署:
     - deploy/01-rknn.md
     - deploy/02-onnx.md
@@ -115,8 +102,6 @@ nav:
     - deploy/06-adbd.md
     - deploy/07-faiss-running-time.md
     - deploy/08-faiss.md
-  - 其他:
-    - Learn/index.md
 
 # [UI]
 # [top]
