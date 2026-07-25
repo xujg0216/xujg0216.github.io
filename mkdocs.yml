@@ -96,12 +96,6 @@ nav:
   - 模型部署:
     - deploy/01-rknn.md
     - deploy/02-onnx.md
-    - deploy/03-video.md
-    - deploy/04-npu.md
-    - deploy/05-cpu.md
-    - deploy/06-adbd.md
-    - deploy/07-faiss-running-time.md
-    - deploy/08-faiss.md
 
 # [UI]
 # [top]
