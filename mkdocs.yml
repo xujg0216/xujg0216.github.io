@@ -11,26 +11,22 @@ nav:
     - GIT/03-git-remote.md
     - GIT/04-git-lfs.md
   - 工具:
-    - docker:
+    - 系统管理:
+      - TOOL/system/01-apt.md
+      - TOOL/system/02-proxy.md
+      - TOOL/system/03-mount.md
+      - TOOL/system/04-tar.md
+    - Docker:
       - TOOL/docker/01-docker-install.md
       - TOOL/docker/02-docker-commands.md
-    - ubuntu:
-      - TOOL/ubuntu/01-timeshift.md
-      - TOOL/ubuntu/02-apt.md
-      - TOOL/ubuntu/03-proxy.md
-      - TOOL/ubuntu/04-byobu.md
-      - TOOL/ubuntu/05-mount.md
-      - TOOL/ubuntu/06-tar.md
-      - TOOL/ubuntu/07-faiss.md
-      - TOOL/ubuntu/08-scp.md
-    - conda:
-      - TOOL/conda.md
+    - 远程操作:
+      - TOOL/remote/01-scp-rsync.md
+      - TOOL/remote/02-byobu.md
+    - 开发环境:
+      - TOOL/dev/conda.md
+      - TOOL/dev/vscode-remote-auto-conn.md
     - RK3588:
       - TOOL/rk3588.md
-    - 共享热点:
-      - TOOL/network.md
-    - vscode远程免密连接:
-      - TOOL/vscode-remote-auto-conn.md
   - 图像处理:
     - ISP:
       - IMAGE_PROCESS/isp/isp_pipeline.md
@@ -118,6 +114,7 @@ nav:
     - deploy/05-cpu.md
     - deploy/06-adbd.md
     - deploy/07-faiss-running-time.md
+    - deploy/08-faiss.md
   - 其他:
     - Learn/index.md
 

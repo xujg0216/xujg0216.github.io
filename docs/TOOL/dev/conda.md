@@ -1,10 +1,3 @@
-<!--
- * @Descripttion: 
- * @Author: xujg
- * @version: 
- * @Date: 2024-09-25 21:22:01
- * @LastEditTime: 2025-07-06 18:32:45
--->
 # Conda 命令
 
 

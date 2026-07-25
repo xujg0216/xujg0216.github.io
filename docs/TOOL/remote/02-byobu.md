@@ -9,7 +9,7 @@
 ### 安装byobu
 在远程服务器安装`byobu`
 ```bash
-sudo aot-get update
+sudo apt-get update
 sudo apt-get install byobu
 ```
 ### 启动 byobu

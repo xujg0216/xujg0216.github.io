@@ -5,15 +5,15 @@
 ## 1. docker简介
 Docker 是一个应用打包、分发、部署的工具
 - **打包**：把软件运行所需的依赖、第三方库、软件打包到一起，变成一个安装包
-- **分发**：把打包好的“安装包”上传到一个镜像仓库，其他人可以非常方便的获取和安装
-- **部署**：拿着“安装包”就可以一个命令运行起来你的应用，自动模拟出一摸一样的运行环境，不管是在 Windows/Mac/Linux确保了不同机器上都是一致的运行环境
+- **分发**：把打包好的"安装包"上传到一个镜像仓库，其他人可以非常方便的获取和安装
+- **部署**：拿着"安装包"就可以一个命令运行起来你的应用，自动模拟出一摸一样的运行环境，不管是在 Windows/Mac/Linux确保了不同机器上都是一致的运行环境
 - **镜像**：镜像包含运行应用程序所需的所有内容——代码或二进制文件、运行时、依赖项以及所需的任何其他文件系统对象。可以理解为软件安装包，可以方便的进行传播和安装。**镜像是一个程序安装包，用来生成容器**
 - **容器**：容器只不过是一个正在运行的进程，它还应用了一些附加的封装功能，以使其与主机和其他容器保持隔离。容器隔离的最重要方面之一是每个容器都与自己的私有文件系统进行交互；该文件系统由Docker镜像提供。**容器是镜像运行的实例，它是一个可读写的，运行中的进程环境**
 
 ## 2. 获取镜像
 获取镜像的方式有两种： 
 * 使用他人打包好，并通过网络（主要是docker官方的docker hub和一些类似的镜像托管网站）进行分享的镜像；
-* 在本地将镜像保存为本地文件，直接使用生成的文件进行共享。后者在网络首先环境下更加方便；
+* 在本地将镜像保存为本地文件，直接使用生成的文件进行共享。后者在网络受限环境下更加方便；
 
 ### 2.1 从网络
 这里主要可以借助于两条指令。一个是 `docker pull` ，另一个是 `docker run `
@@ -82,7 +82,7 @@ hello-world                                            latest              bf756
 
 ```
 
-### 2.2 从他人处
+### 2.2 从本地文件加载
 关于如何保存镜像在后面介绍，其涉及到的指令为 `docker save` ，这里主要讲如何加载已经导出的镜像文件。
 ```bash
 docker load [OPTIONS]
@@ -133,7 +133,7 @@ docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
 | ---- | ------------- | ----------------------------- |
 | `-p` | 将宿主机端口映射到容器端口 | `docker run -p 8080:80 nginx` |
 
-🌐 含义：本机的 `8080` 对应容器的 `80`，可通过 `localhost:8080` 访问。
+含义：本机的 `8080` 对应容器的 `80`，可通过 `localhost:8080` 访问。
 
 
 ### 3.4 卷挂载（数据持久化）
@@ -142,11 +142,10 @@ docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
 | ---- | ----------- | --------------------------------------- |
 | `-v` | 将宿主机目录挂载到容器 | `docker run -v /host/data:/data ubuntu` |
 
-📁 含义：容器内 `/data` 目录与宿主机 `/host/data` 同步。
+含义：容器内 `/data` 目录与宿主机 `/host/data` 同步。
 
-当然可以！Docker 中的挂载方式主要有两种：**绑定挂载（bind mount）** 和 **命名卷挂载（named volume）**。这两种方式都用于**将数据从宿主机“挂载”到容器中**，但它们的机制、用途和管理方式不同。
+Docker 中的挂载方式主要有两种：绑定挂载（bind mount） 和 命名卷挂载（named volume）。这两种方式都用于将数据从宿主机"挂载"到容器中，但它们的机制、用途和管理方式不同。
 
-Docker 中的挂载方式主要有两种：绑定挂载（bind mount） 和 命名卷挂载（named volume）。这两种方式都用于将数据从宿主机“挂载”到容器中，但它们的机制、用途和管理方式不同
 #### 3.4.1 绑定挂载（Bind Mount）
 
 
@@ -509,24 +508,17 @@ docker rm -f $(docker ps -aq)
 ---
 
 
-## 5. 使用 Dockerfile 构建镜像（推荐）
+## 5. 使用 Dockerfile 构建镜像
 
-> **标准做法，适用于开发部署环境、自定义服务镜像等**
-
-
-### 5.1 准备一个 Dockerfile（无扩展名）
-
-**示例**
+### 5.1 准备一个 Dockerfile
 
 ```dockerfile
-# Dockerfile
-FROM ubuntu:20.04                 # 基础镜像
+FROM ubuntu:20.04
 RUN apt update && apt install -y python3
-COPY . /app                       # 拷贝当前目录所有文件进镜像
-WORKDIR /app                     # 设置工作目录
-CMD ["python3", "main.py"]       # 容器启动时执行的命令
+COPY . /app
+WORKDIR /app
+CMD ["python3", "main.py"]
 ```
-
 
 ### 5.2 构建镜像
 
@@ -537,8 +529,7 @@ docker build -t my-python-app:v1 .
 参数说明：
 
 * `-t my-python-app:v1`：给镜像命名并打标签
-* `.`：表示当前目录（Dockerfile 和代码所在目录）
-
+* `.`：表示当前目录（Dockerfile 所在目录）
 
 ### 5.3 查看生成的镜像
 
@@ -546,7 +537,7 @@ docker build -t my-python-app:v1 .
 docker images
 ```
 
-你会看到如下类似输出：
+输出示例：
 
 ```
 REPOSITORY        TAG     IMAGE ID       CREATED          SIZE
@@ -559,95 +550,39 @@ my-python-app     v1      abcd1234...    10 seconds ago   180MB
 docker run -it my-python-app:v1
 ```
 
-当然可以！我们来**系统详细地介绍** `docker save` 和 `docker load`，它们是用于 **镜像的导出与导入** 的命令，常用于：
-
-* 镜像备份（本地保存）
-* 离线环境部署（如无网络的服务器）
-* 镜像迁移（从一台机器移动到另一台）
-
----
-
-## 🧊 `docker save` —— 导出镜像为 `.tar` 文件
-
-### 📌 作用：
-
-将一个或多个 Docker 镜像导出为 `.tar` 文件，**包含镜像的所有层和元数据**。
-
-### 📘 基本语法：
-
-```bash
-docker save -o <保存路径>.tar <镜像名>:<标签>
-```
-
-### ✅ 示例：
-
-```bash
-docker save -o nginx.tar nginx:latest
-```
-
-生成一个 `nginx.tar` 文件，可以复制、传输、存档。
-
----
-
 ## 6. 导出导入镜像
 
+### docker save —— 导出镜像
 
-从 `.tar` 文件中导入镜像到本地 Docker 镜像仓库。
-
+将一个或多个镜像导出为 `.tar` 文件，包含所有层和元数据：
 
 ```bash
-docker load -i <路径>.tar
+docker save -o nginx.tar nginx:latest                     # 导出单个镜像
+docker save -o all-in-one.tar nginx:latest redis:6.0      # 导出多个镜像
 ```
 
-**demo**
+### docker load —— 导入镜像
+
+从 `.tar` 文件导入镜像：
 
 ```bash
 docker load -i nginx.tar
 ```
 
-输出如下，表示导入成功：
+导入后即可像本地镜像一样使用。
 
-```
-Loaded image: nginx:latest
-```
+### 完整示例：迁移镜像
 
-现在像使用本地镜像一样运行它：
-
-```bash
-docker run -d -p 8080:80 nginx:latest
-```
-
-**示例完整流程：备份和迁移镜像**
-
-🟢 在源服务器上：
+源服务器：
 
 ```bash
 docker save -o myapp.tar myapp:1.0
 scp myapp.tar user@target-server:/home/user/
 ```
 
-🔵 在目标服务器上：
+目标服务器：
 
 ```bash
 docker load -i /home/user/myapp.tar
 docker run myapp:1.0
 ```
-
-
-也可以导出多个镜像：
-
-```bash
-docker save -o all-in-one.tar nginx:latest redis:6.0
-```
-
-然后使用 `docker load -i all-in-one.tar` 一次导入所有。
-
- ✅ 总结
-
-| 命令            | 作用                       | 常用场景         |
-| ------------- | ------------------------ | ------------ |
-| `docker save` | 导出镜像为 `.tar` 文件          | 镜像迁移、备份、离线部署 |
-| `docker load` | 从 `.tar` 文件加载镜像          | 离线导入镜像       |
-| 推荐使用          | 配合 `Dockerfile` 构建好镜像后导出 | 安全可靠、易维护     |
-
-
