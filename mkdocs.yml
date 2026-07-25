@@ -77,19 +77,19 @@ nav:
     - deep-learning/06-rnn_lstm.md
     - deep-learning/07-DDPM.md
     - deep-learning/08-bigram.md
+    - deep-learning/09-LLM学习路线.md
+    - deep-learning/10-ollama使用.md
   - 算法:
     - LLM:
-      - algorithms/llm/00-LLM学习路线.md
-      - algorithms/llm/03-ollama使用.md
       - algorithms/llm/06-miniGPT.md
       - algorithms/llm/07-nanoGPT.md
       - algorithms/llm/08-mfu.md
-      - RAG:
-        - algorithms/llm/rag/01-rag-setup-overview.md
-        - algorithms/llm/rag/02-rag-multi-query.md
-        - algorithms/llm/rag/03-rag-routing-query.md
-        - algorithms/llm/rag/04-rag-indexing-retrieval.md
-        - algorithms/llm/rag/05-rag-retrieval-reranking.md
+    - RAG:
+      - algorithms/rag/01-rag-setup-overview.md
+      - algorithms/rag/02-rag-multi-query.md
+      - algorithms/rag/03-rag-routing-query.md
+      - algorithms/rag/04-rag-indexing-retrieval.md
+      - algorithms/rag/05-rag-retrieval-reranking.md
     - 计算机视觉:
       - algorithms/cv/01-bytetrack.md
       - algorithms/cv/02-netvlad.md
