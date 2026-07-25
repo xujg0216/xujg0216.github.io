@@ -93,6 +93,7 @@ nav:
     - 计算机视觉:
       - algorithms/cv/01-bytetrack.md
       - algorithms/cv/02-netvlad.md
+      - algorithms/cv/03-DETR.md
   - 模型部署:
     - deploy/01-rknn.md
     - deploy/02-onnx.md
