@@ -6,8 +6,10 @@ site_description: XUJG Site
 # [Navigation]
 nav:
   - GIT:
-    - GIT/01-git.md
-    - GIT/02-git_lfs.md
+    - GIT/01-git-basics.md
+    - GIT/02-git-branch.md
+    - GIT/03-git-remote.md
+    - GIT/04-git-lfs.md
   - 工具:
     - docker:
       - TOOL/docker/01-docker-install.md
@@ -29,8 +31,6 @@ nav:
       - TOOL/network.md
     - vscode远程免密连接:
       - TOOL/vscode-remote-auto-conn.md
-  - 算法:
-    - Algorithm/01-kalman.md
   - 图像处理:
     - ISP:
       - IMAGE_PROCESS/isp/isp_pipeline.md
@@ -105,8 +105,6 @@ nav:
       - C++/21-hdf5.md
       - C++/22-question.md
       - C++/23-read.md
-  - 计算机网络:
-    - computer_network/01-client_server.md
   - UAV:
     - UAV/00-intro.md
     - UAV/01-elevation.md
