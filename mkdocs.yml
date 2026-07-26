@@ -81,9 +81,10 @@ nav:
     - deep-learning/10-ollama使用.md
   - 算法:
     - LLM:
-      - algorithms/llm/06-miniGPT.md
-      - algorithms/llm/07-nanoGPT.md
-      - algorithms/llm/08-mfu.md
+      - algorithms/llm/01-miniGPT.md
+      - algorithms/llm/02-nanoGPT.md
+      - algorithms/llm/03-mfu.md
+      - algorithms/llm/04-ROPE.md
     - RAG:
       - algorithms/rag/01-rag-setup-overview.md
       - algorithms/rag/02-rag-multi-query.md
