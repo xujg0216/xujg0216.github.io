@@ -85,6 +85,9 @@ nav:
       - algorithms/llm/02-nanoGPT.md
       - algorithms/llm/03-mfu.md
       - algorithms/llm/04-ROPE.md
+      - algorithms/llm/05-run-qwen3.md
+      - algorithms/llm/06-refactor-to-package.md
+      - algorithms/llm/07-kv-cache.md
     - RAG:
       - algorithms/rag/01-rag-setup-overview.md
       - algorithms/rag/02-rag-multi-query.md
