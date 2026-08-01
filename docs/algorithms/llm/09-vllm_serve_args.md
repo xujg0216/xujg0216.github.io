@@ -6,7 +6,6 @@
 
 ## 目录
 
-- [快速参考：8GB 显卡的最简命令](#快速参考8gb-显卡的最简命令)
 - [选项参数 (Options)](#选项参数-options)
 - [Frontend — OpenAI 兼容前端](#frontend--openai-兼容前端)
 - [ModelConfig — 模型配置](#modelconfig--模型配置)
@@ -23,33 +22,6 @@
 - [CompilationConfig — 编译与 CUDA 图](#compilationconfig--编译与-cuda-图)
 - [KernelConfig — 内核选择](#kernelconfig--内核选择)
 - [VllmConfig — 顶级配置容器](#vllmconfig--顶级配置容器)
-
----
-
-## 快速参考：8GB 显卡的最简命令
-
-```bash
-# 最简启动
-vllm serve /path/to/model \
-    --max-model-len 2048 \
-    --gpu-memory-utilization 0.75 \
-    --max-num-seqs 32
-
-# 加推理分离 (Qwen3 等思考模型)
-vllm serve /path/to/model \
-    --max-model-len 2048 \
-    --gpu-memory-utilization 0.75 \
-    --max-num-seqs 32 \
-    --enable-reasoning \
-    --reasoning-parser deepseek_r1
-
-# 看参数文档
-vllm serve --help=all                # 全部参数
-vllm serve --help=ModelConfig        # 只看模型配置
-vllm serve --help=max-model-len     # 只看某个参数
-```
-
-**8GB 卡的关键约束**：`gpu_memory_utilization ≤ 0.80`，`max_num_seqs ≤ 64`，`max_model_len ≤ 4096`。
 
 ---
 
@@ -195,7 +167,7 @@ vllm serve --help=max-model-len     # 只看某个参数
 
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
-| `--max-model-len` | `int`/`str` | 自动 | **模型上下文窗口**（prompt + output 的 token 总数上限）。不设则自动从模型 config 读取（Qwen3-0.6B=40960）。支持缩写：`4k`=4000，`4K`=4096，`25.6k`=25600。设为 `-1` 或 `auto` = 自动选能装进 GPU 的最大值。8GB 卡实际能用的通常 ≤4096 |
+| `--max-model-len` | `int`/`str` | 自动 | **模型上下文窗口**（prompt + output 的 token 总数上限）。不设则自动从模型 config 读取（Qwen3-0.6B=40960）。支持缩写：`4k`=4000，`4K`=4096，`25.6k`=25600。设为 `-1` 或 `auto` = 自动选能装进 GPU 的最大值 |
 
 ### 量化
 
@@ -440,7 +412,7 @@ EPLB 默认配置：
 
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
-| `--gpu-memory-utilization` | `float` | `0.9` | **最重要的内存参数**。KV Cache 可用 GPU 显存的比例（0~1）。`0.5`=50%。这是**每个实例的限制**，不影响同 GPU 上的其他 vLLM 实例。8GB 显卡建议 0.75-0.80 |
+| `--gpu-memory-utilization` | `float` | `0.9` | **最重要的内存参数**。KV Cache 可用 GPU 显存的比例（0~1）。`0.5`=50%。这是**每个实例的限制**，不影响同 GPU 上的其他 vLLM 实例 |
 | `--kv-cache-memory-bytes` | `int`/`str` | `None` | 每个 GPU 的 KV Cache 精确大小（字节），支持 `1k`/`1M` 等缩写。**设了这个后 `gpu_memory_utilization` 会被忽略**。用于需要精确控制内存的场景 |
 | `--block-size` | `int` | `None`（自动） | PagedAttention 的块大小（token 数）。越大 → 管理开销越小但碎片越多。不设则由 vLLM 自动选择（通常 16 或 256） |
 | `--num-gpu-blocks-override` | `int` | `None` | 强制指定 GPU block 数量（用于测试抢占行为） |
@@ -601,7 +573,7 @@ LoRA 允许基础模型在**运行时不修改权重**的情况下适配不同�
 
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
-| `--max-num-seqs` | `int` | 自动 | **最大并发序列数**（单次迭代最多处理的序列数）。8GB 卡建议 32 |
+| `--max-num-seqs` | `int` | 自动 | **最大并发序列数**（单次迭代最多处理的序列数） |
 | `--max-num-batched-tokens` | `int`/`str` | 自动 | **单次迭代最大处理 token 数**。影响显存峰值和计算吞吐。支持 `1k`/`1K` 等缩写。不设时自动推导 |
 
 ### Chunked Prefill
@@ -809,7 +781,7 @@ vLLM 的 JSON 参数支持两种等价的 CLI 写法：
 
 | 场景 | 关键参数 |
 |---|---|
-| **8GB 单卡** | `--max-model-len 2048 --gpu-memory-utilization 0.75 --max-num-seqs 32` |
+| **基础单卡** | `--max-model-len 2048 --gpu-memory-utilization 0.9 --max-num-seqs 32` |
 | **24GB 单卡 7B** | `--max-model-len 8192 --gpu-memory-utilization 0.9` |
 | **多卡大模型** | `--tensor-parallel-size N` |
 | **超长上下文** | `--prefill-context-parallel-size 2 --decode-context-parallel-size 2` |
