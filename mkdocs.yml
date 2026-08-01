@@ -89,6 +89,7 @@ nav:
       - algorithms/llm/06-refactor-to-package.md
       - algorithms/llm/07-kv-cache.md
       - algorithms/llm/08-paged-kv-cache.md
+      - algorithms/llm/09-vllm_serve_args.md
     - RAG:
       - algorithms/rag/01-rag-setup-overview.md
       - algorithms/rag/02-rag-multi-query.md
