@@ -104,6 +104,7 @@ y \\
 $$
 
 最后总结为：
+
 $$
 \begin{aligned}
 Z_c \left[ \begin{array}{c} u \\ v \\ 1 \end{array} \right]
@@ -116,6 +117,7 @@ Z_c \left[ \begin{array}{c} u \\ v \\ 1 \end{array} \right]
 \left[ \begin{array}{c} X_w \\ Y_w \\ Z_w \\ 1 \end{array} \right]
 \end{aligned}
 $$
+
 前者为相机内参， 后者为相机外参
 
 $Z_c$是深度信息，空间中的一个坐标点，可以在图像中找到一个对应的像素点，但是，通过图像中的一个点找到它在空间中对应的点很难，因为$Z_c$深度信息未知。
