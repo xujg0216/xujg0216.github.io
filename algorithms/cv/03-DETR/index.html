@@ -1,0 +1,5974 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="XUJG Site">
+      
+      
+        <meta name="author" content="xujg">
+      
+      
+        <link rel="canonical" href="https://xjg-0216.github.io/algorithms/cv/03-DETR/">
+      
+      
+        <link rel="prev" href="../02-netvlad/">
+      
+      
+        <link rel="next" href="../../../deploy/01-rknn/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>DETR (DEtection TRansformer) - XUJG Site</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css">
+    
+      <link rel="stylesheet" href="../../../mkdocs/css/no-footer.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#detr-detection-transformer" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../.." title="XUJG Site" class="md-header__button md-logo" aria-label="XUJG Site" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            XUJG Site
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              DETR (DEtection TRansformer)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="orange"  aria-label="切换至夜间模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至夜间模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="orange"  aria-label="切换至日间模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至日间模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Xjg-0216/xjg-0216.github.io" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xjg-0216.github.io
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../GIT/01-git-basics/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  GIT
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../TOOL/system/01-apt/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  工具
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../C%2B%2B/vscode/00-make/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  C++
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../classical-cv/01-isp-pipeline/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  传统图像处理
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../deep-learning/01-transformer/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  深度学习基础
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../llm/01-miniGPT/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  算法
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../deploy/01-rknn/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  模型部署
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="XUJG Site" class="md-nav__button md-logo" aria-label="XUJG Site" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    XUJG Site
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Xjg-0216/xjg-0216.github.io" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xjg-0216.github.io
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GIT
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    GIT
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../GIT/01-git-basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Git 基础
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../GIT/02-git-branch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    分支管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../GIT/03-git-remote/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程仓库
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../GIT/04-git-lfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Git LFS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工具
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    工具
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    系统管理
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    系统管理
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/system/01-apt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    apt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/system/02-proxy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    网络代理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/system/03-mount/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    挂载硬盘
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/system/04-tar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    tar/zip
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Docker
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/docker/01-docker-install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    docker安装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/docker/02-docker-commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    docker基本命令
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程操作
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    远程操作
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/remote/01-scp-rsync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程文件传输
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/remote/02-byobu/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    byobu
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发环境
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    开发环境
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/dev/conda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conda 命令
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/dev/vscode-remote-auto-conn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vscode远程免密连接
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RK3588
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    RK3588
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/rk3588/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RK3588烧录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    C++
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    编译工具链
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    编译工具链
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/00-make/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    零 CMake&amp;make&amp;Makefile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/01-g%2B%2B/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    一 Linux中编译C++
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/02-compile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    二 Linux C++命令行编译
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/03-dbg/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    三 GDB调试器
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/04-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    四 Linux C++命令行调试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/05-cmake/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    五 CMake的语法特性与常用变量
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/06-cmake-compile-step/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    六 CMake编译流程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/07-cmake-compile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    七 CMake项目编译实战
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/08-vscode-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    八 VSCode中调试C++程序
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/09-vscode-appendix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    九 附录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    语法
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    语法
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/00-stl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/01-class1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    一 类-封装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/02-class2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    二 类-继承
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/03-class3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    三 类-多态
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/04-memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    四 内存分配与释放
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/05-argv/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    五 命令行参数
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/06-char/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    六 char 和 string
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/07-const/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    七 const
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/08-point_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    八 指针与引用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/09-type_modify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    九 类型修饰符
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/10-type_convert/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    十 类型转换
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/11-define/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    十一 预处理器与宏定义
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/12-multi_thread/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    十二 多线程与线程池
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/13-lambda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    lambda函数
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/14-linking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    静态编译和动态编译
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/15-std_function/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    std::function&lt;void()&gt;
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/16-l_r_value/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    左值和右值
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/17-function_template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    函数模板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/18-std_bind/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    std::bind
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/19-std_result_of/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    std::result_of
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/20-std_packaged_task/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    std::packaged_task
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/21-hdf5/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HDF5
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/22-question/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    c++常见问题
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/23-read/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    读取文件
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    传统图像处理
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    传统图像处理
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../classical-cv/01-isp-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ISP Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../classical-cv/02-opencv-mat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    cv::Mat 容器
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../classical-cv/03-imaging-basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    成像基础
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    深度学习基础
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    深度学习基础
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/01-transformer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    transformer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/02-ViT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ViT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/03-bert/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    03 bert
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/04-mae/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    04 mae
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/05-gpt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    05 gpt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/06-rnn_lstm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RNN
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/07-DDPM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    扩散模型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/08-bigram/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    bigram language model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/09-LLM%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM主要内容
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/10-ollama%E4%BD%BF%E7%94%A8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ollama 使用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    算法
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    算法
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    LLM
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../llm/01-miniGPT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    miniGPT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../llm/02-nanoGPT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    nanogpt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../llm/03-mfu/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MFU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../llm/04-ROPE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RoPE：旋转位置编码
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../llm/05-run-qwen3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从零手写 Qwen3 推理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../llm/06-refactor-to-package/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从单文件到模块化框架 — run_qwen3.py 重构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../llm/07-kv-cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    KV Cache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../llm/08-paged-kv-cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paged KV Cache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../llm/09-vllm_serve_args/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    vLLM Serve 参数全解（详细版）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    RAG
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rag/01-rag-setup-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG 设置概览详解
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rag/02-rag-multi-query/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG 多查询技术详解
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rag/03-rag-routing-query/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG 路由与查询构建详解
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rag/04-rag-indexing-retrieval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG 索引与高级检索详解
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rag/05-rag-retrieval-reranking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG 检索与重排序详解
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6_3" id="__nav_6_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    计算机视觉
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    计算机视觉
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-bytetrack/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ByteTrack跟踪算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-netvlad/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NetVLAD向量聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DETR (DEtection TRansformer)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DETR (DEtection TRansformer)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#detr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        一、DETR 的核心思想
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        二、整体 Pipeline 流程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        三、数据预处理
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="三、数据预处理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-convertcocopolystomask" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 标注格式转换 (ConvertCocoPolysToMask)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 数据增强
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-normalize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Normalize 中的关键操作
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-batch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Batch 组装
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        四、模型前向传播
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="四、模型前向传播">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-backbone-position-encoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Backbone + Position Encoding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-transformer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Transformer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2 Transformer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        输入准备
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#encoder-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Encoder (6 层)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decoder-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decoder (6 层)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decoder (6 层)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数据流概览
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decoderlayer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        单层结构 (DecoderLayer)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1-self-attention-query" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ① Self-Attention — query 间交互
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-cross-attention-query" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ② Cross-Attention — query 从图像特征中检索信息
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-ffn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ③ FFN — 逐位置特征变换
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        残差结构
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6 层堆叠与中间监督
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        query 演化的阶段性特征
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transformer-decoder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        与自回归 Transformer Decoder 的本质区别
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#self-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-Attention 的隐式去重机制
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 预测头
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        五、匈牙利匹配
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="五、匈牙利匹配">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 代价矩阵构建
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 最优匹配
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        六、损失计算
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="六、损失计算">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 总损失公式
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-loss_labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 分类损失 (loss_labels)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-loss_boxes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 框回归损失 (loss_boxes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-auxiliary-loss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 辅助损失 (Auxiliary Loss)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        七、训练流程
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="七、训练流程">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 一次训练迭代
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 训练配置速查
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        八、维度变化速查表
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detr_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        九、DETR 的设计亮点
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        十、局限性
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模型部署
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    模型部署
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deploy/01-rknn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RKNN
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deploy/02-onnx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ONNX
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#detr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        一、DETR 的核心思想
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        二、整体 Pipeline 流程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        三、数据预处理
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="三、数据预处理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-convertcocopolystomask" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 标注格式转换 (ConvertCocoPolysToMask)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 数据增强
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-normalize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Normalize 中的关键操作
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-batch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Batch 组装
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        四、模型前向传播
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="四、模型前向传播">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-backbone-position-encoding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Backbone + Position Encoding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-transformer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Transformer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2 Transformer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        输入准备
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#encoder-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Encoder (6 层)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decoder-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decoder (6 层)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decoder (6 层)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数据流概览
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decoderlayer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        单层结构 (DecoderLayer)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1-self-attention-query" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ① Self-Attention — query 间交互
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-cross-attention-query" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ② Cross-Attention — query 从图像特征中检索信息
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-ffn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ③ FFN — 逐位置特征变换
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        残差结构
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6 层堆叠与中间监督
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        query 演化的阶段性特征
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transformer-decoder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        与自回归 Transformer Decoder 的本质区别
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#self-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self-Attention 的隐式去重机制
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 预测头
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        五、匈牙利匹配
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="五、匈牙利匹配">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 代价矩阵构建
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 最优匹配
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        六、损失计算
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="六、损失计算">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 总损失公式
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-loss_labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 分类损失 (loss_labels)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-loss_boxes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 框回归损失 (loss_boxes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-auxiliary-loss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 辅助损失 (Auxiliary Loss)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        七、训练流程
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="七、训练流程">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 一次训练迭代
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 训练配置速查
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        八、维度变化速查表
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detr_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        九、DETR 的设计亮点
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        十、局限性
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+
+  <nav class="md-path" aria-label="导航栏" >
+    <ol class="md-path__list">
+      
+      
+        
+  
+  
+    
+    
+      
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../../llm/01-miniGPT/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    算法
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../01-bytetrack/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    计算机视觉
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/Xjg-0216/xjg-0216.github.io/edit/main/docs/algorithms/cv/03-DETR.md" title="编辑此页" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="detr-detection-transformer">DETR (DEtection TRansformer)<a class="headerlink" href="#detr-detection-transformer" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>DETR 是 Facebook Research 在 2020 年提出的目标检测模型，首次将 Transformer 架构引入目标检测领域，摒弃了传统检测器中手工设计的 NMS、Anchor 等组件，实现了一个真正端到端的检测 pipeline。</p>
+</blockquote>
+<hr />
+<h2 id="detr">一、DETR 的核心思想<a class="headerlink" href="#detr" title="Permanent link">&para;</a></h2>
+<p>传统目标检测器（Faster R-CNN、YOLO 等）依赖大量人工先验：anchor 设计、NMS 后处理、RoI 池化等。DETR 将这些组件全部替换为 <strong>Transformer + 集合预测</strong>，把目标检测建模成一个<strong>二分图匹配问题</strong>：</p>
+<ul>
+<li><strong>Encoder</strong> 将图像特征编码为全局上下文</li>
+<li><strong>Decoder</strong> 用 100 个可学习的 object queries 并行解码出 100 个检测结果</li>
+<li><strong>匈牙利算法</strong> 在预测集和 GT 集之间做 1 对 1 匹配</li>
+<li>匹配上的预测计算分类 + 回归损失，未匹配的归为 "no object"</li>
+</ul>
+<hr />
+<p><img alt="alt text" src="../img/detr1.png" /></p>
+<h2 id="pipeline">二、整体 Pipeline 流程<a class="headerlink" href="#pipeline" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Text Only</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1">输入图像 (PIL + COCO 标注)
+</span><span id="__span-0-2">  │
+</span><span id="__span-0-3">  ├─ [1] 数据预处理 (Transforms)
+</span><span id="__span-0-4">  │     ├─ RandomResize / RandomCrop / RandomFlip
+</span><span id="__span-0-5">  │     ├─ ToTensor + Normalize
+</span><span id="__span-0-6">  │     ├─ boxes: xyxy → cxcywh + 归一化到 [0, 1]
+</span><span id="__span-0-7">  │     └─ batch padding + mask 生成
+</span><span id="__span-0-8">  │
+</span><span id="__span-0-9">  ├─ [2] 模型前向 (DETR.forward)
+</span><span id="__span-0-10">  │     ├─ Backbone (ResNet-50) → 特征图 [B, 2048, H/32, W/32]
+</span><span id="__span-0-11">  │     ├─ Position Embedding (正弦编码) → [B, 256, H/32, W/32]
+</span><span id="__span-0-12">  │     ├─ 1×1 Conv 降维 → [B, 256, H/32, W/32]
+</span><span id="__span-0-13">  │     ├─ Transformer Encoder (6 层)
+</span><span id="__span-0-14">  │     │     └─ Self-Attn + FFN, 输出 memory
+</span><span id="__span-0-15">  │     ├─ Transformer Decoder (6 层)
+</span><span id="__span-0-16">  │     │     └─ Self-Attn + Cross-Attn + FFN, 输出 [6, B, 100, 256]
+</span><span id="__span-0-17">  │     ├─ class_embed: Linear(256, num_classes+1) → 分类 logits
+</span><span id="__span-0-18">  │     └─ bbox_embed: MLP(256→256→4) → sigmoid → cxcywh ∈ [0,1]
+</span><span id="__span-0-19">  │
+</span><span id="__span-0-20">  ├─ [3] 匈牙利匹配 (HungarianMatcher)
+</span><span id="__span-0-21">  │     ├─ 代价矩阵: C = 5×L1_cost + 1×CLS_cost + 2×GIoU_cost
+</span><span id="__span-0-22">  │     └─ scipy.linear_sum_assignment → 1 对 1 匹配
+</span><span id="__span-0-23">  │
+</span><span id="__span-0-24">  ├─ [4] 损失计算 (SetCriterion)
+</span><span id="__span-0-25">  │     ├─ L_ce: CrossEntropy(所有 100 个预测), no-object 类权重 0.1
+</span><span id="__span-0-26">  │     ├─ L_bbox: L1 Loss (仅匹配上的预测)
+</span><span id="__span-0-27">  │     ├─ L_giou: GIoU Loss (仅匹配上的预测)
+</span><span id="__span-0-28">  │     └─ 辅助损失: 每层 decoder 独立匹配 + 计算
+</span><span id="__span-0-29">  │
+</span><span id="__span-0-30">  └─ [5] 反向传播 + 梯度裁剪 + AdamW 优化
+</span></code></pre></div></td></tr></table></div>
+<hr />
+<h2 id="_1">三、数据预处理<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>数据从 COCO 格式到模型输入经历了以下转换：</p>
+<h3 id="31-convertcocopolystomask">3.1 标注格式转换 (<code>ConvertCocoPolysToMask</code>)<a class="headerlink" href="#31-convertcocopolystomask" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-1-1"><span class="c1"># COCO 原始 bbox: [x, y, w, h] (绝对坐标, 左上角+宽高)</span>
+</span><span id="__span-1-2"><span class="c1"># 转换后:</span>
+</span><span id="__span-1-3"><span class="n">target</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="__span-1-4">    <span class="s1">&#39;boxes&#39;</span><span class="p">:</span>   <span class="p">[</span><span class="n">N</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>  <span class="c1"># [x1, y1, x2, y2] 绝对坐标</span>
+</span><span id="__span-1-5">    <span class="s1">&#39;labels&#39;</span><span class="p">:</span>  <span class="p">[</span><span class="n">N</span><span class="p">]</span>     <span class="c1"># category_id</span>
+</span><span id="__span-1-6">    <span class="s1">&#39;image_id&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</span><span id="__span-1-7">    <span class="s1">&#39;orig_size&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">]</span>  <span class="c1"># 原始图像尺寸</span>
+</span><span id="__span-1-8"><span class="p">}</span>
+</span></code></pre></div></td></tr></table></div>
+<h3 id="32">3.2 数据增强<a class="headerlink" href="#32" title="Permanent link">&para;</a></h3>
+<p>训练时的 transforms 顺序：</p>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-2-1"><span class="n">T</span><span class="o">.</span><span class="n">RandomHorizontalFlip</span><span class="p">()</span>        <span class="c1"># 50% 概率水平翻转</span>
+</span><span id="__span-2-2"><span class="n">T</span><span class="o">.</span><span class="n">RandomSelect</span><span class="p">(</span>
+</span><span id="__span-2-3">    <span class="n">T</span><span class="o">.</span><span class="n">RandomResize</span><span class="p">(</span><span class="n">scales</span><span class="p">),</span>     <span class="c1"># 50%: 仅缩放 (短边 ∈ [480,800], 长边 ≤ 1333)</span>
+</span><span id="__span-2-4">    <span class="n">T</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>                 <span class="c1"># 50%: 缩放+裁剪+缩放</span>
+</span><span id="__span-2-5">        <span class="n">T</span><span class="o">.</span><span class="n">RandomResize</span><span class="p">([</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">]),</span>
+</span><span id="__span-2-6">        <span class="n">T</span><span class="o">.</span><span class="n">RandomSizeCrop</span><span class="p">(</span><span class="mi">384</span><span class="p">,</span><span class="mi">600</span><span class="p">),</span>
+</span><span id="__span-2-7">        <span class="n">T</span><span class="o">.</span><span class="n">RandomResize</span><span class="p">(</span><span class="n">scales</span><span class="p">),</span>
+</span><span id="__span-2-8">    <span class="p">])</span>
+</span><span id="__span-2-9"><span class="p">)</span>
+</span><span id="__span-2-10"><span class="n">T</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()</span>                    <span class="c1"># PIL → Tensor [0,1]</span>
+</span><span id="__span-2-11"><span class="n">T</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">)</span>          <span class="c1"># 标准化 + 关键转换↓↓↓</span>
+</span></code></pre></div></td></tr></table></div>
+<h3 id="33-normalize">3.3 Normalize 中的关键操作<a class="headerlink" href="#33-normalize" title="Permanent link">&para;</a></h3>
+<p><code>Normalize</code> 在标准化图像的同时，完成了 boxes 的<strong>两次关键转换</strong> (<code>datasets/transforms.py:242</code>):</p>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-3-1"><span class="n">boxes</span> <span class="o">=</span> <span class="n">box_xyxy_to_cxcywh</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span>    <span class="c1"># [x1,y1,x2,y2] → [cx,cy,w,h]</span>
+</span><span id="__span-3-2"><span class="n">boxes</span> <span class="o">=</span> <span class="n">boxes</span> <span class="o">/</span> <span class="p">[</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">]</span>         <span class="c1"># 归一化到 [0,1]</span>
+</span></code></pre></div></td></tr></table></div>
+<blockquote>
+<p>这里 DETR 决定使用 <strong>(cx, cy, w, h) 归一化坐标</strong> 作为框的表示形式，且所有后续操作（匹配、损失、预测）都基于此格式。</p>
+</blockquote>
+<h3 id="34-batch">3.4 Batch 组装<a class="headerlink" href="#34-batch" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-4-1"><span class="c1"># collate_fn → nested_tensor_from_tensor_list</span>
+</span><span id="__span-4-2"><span class="c1"># 将不同尺寸的图像 pad 到 batch 中最大尺寸</span>
+</span><span id="__span-4-3"><span class="c1"># 生成 mask: True = 填充区域（需要忽略）</span>
+</span><span id="__span-4-4">
+</span><span id="__span-4-5"><span class="n">samples</span> <span class="o">=</span> <span class="n">NestedTensor</span><span class="p">(</span>
+</span><span id="__span-4-6">    <span class="n">tensor</span><span class="o">=</span><span class="p">[</span><span class="n">B</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">H_max</span><span class="p">,</span> <span class="n">W_max</span><span class="p">],</span>   <span class="c1"># pad 后的图像</span>
+</span><span id="__span-4-7">    <span class="n">mask</span><span class="o">=</span><span class="p">[</span><span class="n">B</span><span class="p">,</span> <span class="n">H_max</span><span class="p">,</span> <span class="n">W_max</span><span class="p">]</span>          <span class="c1"># 填充位置为 True</span>
+</span><span id="__span-4-8"><span class="p">)</span>
+</span></code></pre></div></td></tr></table></div>
+<hr />
+<h2 id="_2">四、模型前向传播<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<h3 id="41-backbone-position-encoding">4.1 Backbone + Position Encoding<a class="headerlink" href="#41-backbone-position-encoding" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-5-1"><span class="n">features</span><span class="p">,</span> <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>  <span class="c1"># Joiner(Backbone, PositionEmbedding)</span>
+</span></code></pre></div></td></tr></table></div>
+<p><strong>Backbone (ResNet-50):</strong>
+- 使用 <code>FrozenBatchNorm2d</code>（固定 BN 统计量）
+- <code>IntermediateLayerGetter</code> 截取 <code>layer4</code> 输出
+- 输出特征图: <code>[B, 2048, H/32, W/32]</code>
+- mask 也从原图插值到相同尺寸</p>
+<p><strong>PositionEmbeddingSine:</strong>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-6-1"><span class="c1"># 对每个位置计算行列累计值</span>
+</span><span id="__span-6-2"><span class="n">y_embed</span> <span class="o">=</span> <span class="n">mask_not</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># 行方向累积</span>
+</span><span id="__span-6-3"><span class="n">x_embed</span> <span class="o">=</span> <span class="n">mask_not</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># 列方向累积</span>
+</span><span id="__span-6-4">
+</span><span id="__span-6-5"><span class="c1"># 不同频率的 sin/cos 编码</span>
+</span><span id="__span-6-6"><span class="n">pos_x</span> <span class="o">=</span> <span class="n">sin</span><span class="o">/</span><span class="n">cos</span><span class="p">(</span><span class="n">x_embed</span> <span class="o">/</span> <span class="n">temperature</span><span class="o">^</span><span class="p">(</span><span class="mi">2</span><span class="n">i</span><span class="o">/</span><span class="n">d</span><span class="p">))</span>
+</span><span id="__span-6-7"><span class="n">pos_y</span> <span class="o">=</span> <span class="n">sin</span><span class="o">/</span><span class="n">cos</span><span class="p">(</span><span class="n">y_embed</span> <span class="o">/</span> <span class="n">temperature</span><span class="o">^</span><span class="p">(</span><span class="mi">2</span><span class="n">i</span><span class="o">/</span><span class="n">d</span><span class="p">))</span>
+</span><span id="__span-6-8">
+</span><span id="__span-6-9"><span class="c1"># 输出: [B, 256, H/32, W/32]</span>
+</span><span id="__span-6-10"><span class="c1"># y 方向 128 维 + x 方向 128 维 = 256 维</span>
+</span></code></pre></div></td></tr></table></div></p>
+<p>不使用 <code>normalize=True</code> 时对 mask 区域做归一化，使得位置编码对图像尺寸不变。</p>
+<h3 id="42-transformer">4.2 Transformer<a class="headerlink" href="#42-transformer" title="Permanent link">&para;</a></h3>
+<h4 id="_3">输入准备<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h4>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-7-1"><span class="n">src</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_proj</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>           <span class="c1"># Conv2d(2048, 256, 1×1)</span>
+</span><span id="__span-7-2"><span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [B,256,H,W] → [HW, B, 256]</span>
+</span><span id="__span-7-3"><span class="n">pos</span> <span class="o">=</span> <span class="n">pos_embed</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="__span-7-4"><span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>               <span class="c1"># [B, HW]</span>
+</span><span id="__span-7-5"><span class="n">tgt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>       <span class="c1"># object queries 初始化为零</span>
+</span></code></pre></div></td></tr></table></div>
+<h4 id="encoder-6">Encoder (6 层)<a class="headerlink" href="#encoder-6" title="Permanent link">&para;</a></h4>
+<p>每层的计算 (<code>TransformerEncoderLayer.forward_post</code>):</p>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-8-1"><span class="c1"># 1. Self-Attention</span>
+</span><span id="__span-8-2"><span class="n">q</span> <span class="o">=</span> <span class="n">k</span> <span class="o">=</span> <span class="n">src</span> <span class="o">+</span> <span class="n">pos</span>              <span class="c1"># Query/Key 加上位置编码</span>
+</span><span id="__span-8-3"><span class="n">attn_out</span> <span class="o">=</span> <span class="n">MultiheadAttention</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">src</span><span class="p">,</span>
+</span><span id="__span-8-4">                               <span class="n">key_padding_mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>   <span class="c1"># 屏蔽填充位置</span>
+</span><span id="__span-8-5"><span class="n">src</span> <span class="o">=</span> <span class="n">LayerNorm</span><span class="p">(</span><span class="n">src</span> <span class="o">+</span> <span class="n">dropout</span><span class="p">(</span><span class="n">attn_out</span><span class="p">))</span>
+</span><span id="__span-8-6">
+</span><span id="__span-8-7"><span class="c1"># 2. FFN</span>
+</span><span id="__span-8-8"><span class="n">ffn_out</span> <span class="o">=</span> <span class="n">Linear2</span><span class="p">(</span><span class="n">ReLU</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="n">Linear1</span><span class="p">(</span><span class="n">src</span><span class="p">))))</span>   <span class="c1"># 256→2048→256</span>
+</span><span id="__span-8-9"><span class="n">src</span> <span class="o">=</span> <span class="n">LayerNorm</span><span class="p">(</span><span class="n">src</span> <span class="o">+</span> <span class="n">dropout</span><span class="p">(</span><span class="n">ffn_out</span><span class="p">))</span>
+</span></code></pre></div></td></tr></table></div>
+<p>输出 <code>memory</code>: <strong>[HW, B, 256]</strong> — 融合了全局上下文的图像特征。</p>
+<h4 id="decoder-6">Decoder (6 层)<a class="headerlink" href="#decoder-6" title="Permanent link">&para;</a></h4>
+<h5 id="_4">数据流概览<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h5>
+<p>Decoder 的输入包含四类张量，它们的角色和生命周期各不相同：</p>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-9-1"><span class="c1"># Transformer.forward (transformer.py:47-58)</span>
+</span><span id="__span-9-2"><span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">query_embed</span><span class="p">,</span> <span class="n">pos_embed</span><span class="p">):</span>
+</span><span id="__span-9-3">    <span class="n">bs</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">shape</span>
+</span><span id="__span-9-4">
+</span><span id="__span-9-5">    <span class="n">memory</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">pos_embed</span><span class="p">)</span>              <span class="c1"># [HW, B, 256]</span>
+</span><span id="__span-9-6">    <span class="n">pos</span>       <span class="o">=</span> <span class="n">pos_embed</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>           <span class="c1"># [HW, B, 256]</span>
+</span><span id="__span-9-7">    <span class="n">query_pos</span> <span class="o">=</span> <span class="n">query_embed</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">bs</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>       <span class="c1"># [100, B, 256]</span>
+</span><span id="__span-9-8">    <span class="n">tgt</span>       <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">query_pos</span><span class="p">)</span>                     <span class="c1"># [100, B, 256]</span>
+</span></code></pre></div></td></tr></table></div>
+<table>
+<thead>
+<tr>
+<th>张量</th>
+<th>Shape</th>
+<th>语义</th>
+<th>来源</th>
+<th>更新</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>memory</code></td>
+<td>[HW, B, 256]</td>
+<td>编码后的图像全局特征</td>
+<td>Encoder 输出</td>
+<td>否</td>
+</tr>
+<tr>
+<td><code>pos</code></td>
+<td>[HW, B, 256]</td>
+<td>图像空间位置编码</td>
+<td>正弦编码</td>
+<td>否</td>
+</tr>
+<tr>
+<td><code>query_pos</code></td>
+<td>[100, B, 256]</td>
+<td>可学习的 object query 身份</td>
+<td><code>nn.Embedding(100, 256)</code></td>
+<td>否（前向不变；反向通过梯度更新参数）</td>
+</tr>
+<tr>
+<td><code>tgt</code></td>
+<td>[100, B, 256]</td>
+<td>querys 的内容表示</td>
+<td>全零初始化</td>
+<td><strong>逐层更新</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>tgt</code> 初始化为全零是因为每个 query 的"身份"（检索条件）完全由 <code>query_pos</code> 提供，"内容"（检索积累）随着每层从 <code>memory</code> 中提取信息而逐步填充。<code>query_pos</code> 在 6 层 decoder 中<strong>共享且不随层变化</strong>——它的作用是在每一层提供稳定的检索身份，其参数值通过反向传播在整个训练过程中逐步学习。</p>
+</blockquote>
+<hr />
+<h5 id="decoderlayer">单层结构 (DecoderLayer)<a class="headerlink" href="#decoderlayer" title="Permanent link">&para;</a></h5>
+<p>每层按顺序包含三个子模块，各有不同的信息交互范围：</p>
+<div class="language-text highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Text Only</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-10-1">   tgt [100, B, 256]  ──── ① Self-Attention ──── Add &amp; Norm ──┐
+</span><span id="__span-10-2">  (query 内部表示)      (query×query 交互)                       │
+</span><span id="__span-10-3">                                                                 ├── ② Cross-Attention ── Add &amp; Norm ──┐
+</span><span id="__span-10-4">  memory [HW, B, 256]  ─────────────────────────────────────────┘   (query×image 交互)                  │
+</span><span id="__span-10-5">                                                                                                         ├── ③ FFN ── Add &amp; Norm
+</span><span id="__span-10-6">  query_pos ─────────────────────────────────────────────────────────────────────────────────────────────┘   (逐位置变换)
+</span><span id="__span-10-7">  pos       ─────────────────────────────────────────────────────────────────────────────────────────────┘
+</span></code></pre></div></td></tr></table></div>
+<blockquote>
+<p>三种交互范围的本质区别：Self-Attention 在 <strong>query 集合内部</strong>做信息交换；Cross-Attention 在 <strong>query 与图像特征之间</strong>做跨模态检索；FFN 在<strong>每个 query 内部</strong>做非线性变换。</p>
+</blockquote>
+<hr />
+<h5 id="1-self-attention-query">① Self-Attention — query 间交互<a class="headerlink" href="#1-self-attention-query" title="Permanent link">&para;</a></h5>
+<p><strong>源码</strong> :</p>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-11-1"><span class="n">q</span> <span class="o">=</span> <span class="n">k</span> <span class="o">=</span> <span class="n">tgt</span> <span class="o">+</span> <span class="n">query_pos</span>            <span class="c1"># Q = K = 内容 + 身份</span>
+</span><span id="__span-11-2"><span class="n">v</span> <span class="o">=</span> <span class="n">tgt</span>                            <span class="c1"># V = 纯内容</span>
+</span><span id="__span-11-3"><span class="n">tgt2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">self_attn</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span><span id="__span-11-4"><span class="n">tgt</span> <span class="o">=</span> <span class="n">LayerNorm</span><span class="p">(</span><span class="n">tgt</span> <span class="o">+</span> <span class="n">dropout</span><span class="p">(</span><span class="n">tgt2</span><span class="p">))</span>
+</span></code></pre></div></td></tr></table></div>
+<p><strong>计算过程</strong>:</p>
+<div class="language-text highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Text Only</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-12-1">Attention(Q, K, V) = softmax( Q·K^T / √d_k ) · V
+</span><span id="__span-12-2">
+</span><span id="__span-12-3">其中 Q, K ∈ R^{100×256}, Q·K^T ∈ R^{100×100}
+</span></code></pre></div></td></tr></table></div>
+<ul>
+<li><strong>Score</strong>: 100×100 矩阵，<code>S[i][j]</code> 表示 query_i 的 Q 与 query_j 的 K 的点积相似度</li>
+<li><strong>Attention weights</strong>: 经 softmax 归一化后，<code>A[i][j]</code> 是 query_i 对 query_j 的关注权重</li>
+<li><strong>Output</strong>: <code>O[i] = Σ_j A[i][j] · V[j]</code>，query_i 的输出是所有 query_j 的 V 的加权混合</li>
+</ul>
+<p><strong>设计意图</strong>: DETR 同时输出全部 100 个检测结果。Self-Attention 提供了 <strong>信息交互通道</strong>，使每个 query 在执行 Cross-Attention 之前能够感知其他 query 的状态，避免多个 query 聚焦同一目标区域——这等价于一种<strong>隐式的去重机制</strong>，替代了传统检测器中 NMS 后处理的功能。</p>
+<hr />
+<h5 id="2-cross-attention-query">② Cross-Attention — query 从图像特征中检索信息<a class="headerlink" href="#2-cross-attention-query" title="Permanent link">&para;</a></h5>
+<p><strong>源码</strong>:</p>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-13-1"><span class="n">tgt2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">multihead_attn</span><span class="p">(</span>
+</span><span id="__span-13-2">    <span class="n">query</span> <span class="o">=</span> <span class="n">tgt</span> <span class="o">+</span> <span class="n">query_pos</span><span class="p">,</span>              <span class="c1"># Q: query 的意图</span>
+</span><span id="__span-13-3">    <span class="n">key</span>   <span class="o">=</span> <span class="n">memory</span> <span class="o">+</span> <span class="n">pos</span><span class="p">,</span>                 <span class="c1"># K: 图像特征 + 空间位置</span>
+</span><span id="__span-13-4">    <span class="n">value</span> <span class="o">=</span> <span class="n">memory</span><span class="p">,</span>                       <span class="c1"># V: 纯视觉内容</span>
+</span><span id="__span-13-5">    <span class="n">key_padding_mask</span> <span class="o">=</span> <span class="n">mask</span>               <span class="c1"># 屏蔽 padding 区域</span>
+</span><span id="__span-13-6"><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span><span id="__span-13-7"><span class="n">tgt</span> <span class="o">=</span> <span class="n">LayerNorm</span><span class="p">(</span><span class="n">tgt</span> <span class="o">+</span> <span class="n">dropout</span><span class="p">(</span><span class="n">tgt2</span><span class="p">))</span>
+</span></code></pre></div></td></tr></table></div>
+<p><strong>计算过程</strong>:</p>
+<div class="language-text highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Text Only</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-14-1">Attention(Q, K, V) = softmax( Q·K^T / √d_k ) · V
+</span><span id="__span-14-2">
+</span><span id="__span-14-3">Q ∈ R^{100×256}, K, V ∈ R^{HW×256}, Q·K^T ∈ R^{100×HW}
+</span></code></pre></div></td></tr></table></div>
+<ul>
+<li><strong>Score</strong>: 100×HW 矩阵，<code>S[i][j]</code> 表示 query_i 对图像位置 j 的匹配程度</li>
+<li><strong>Attention weights</strong>: 经 softmax 后，每行对 HW 个位置形成概率分布</li>
+<li><strong>Output</strong>: <code>O[i] = Σ_j A[i][j] · V[j]</code>，query_i 的输出是对所有图像位置 V 的加权聚合</li>
+</ul>
+<p><strong>Q/K/V 的语义</strong>:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Q (query)</th>
+<th>K (key)</th>
+<th>V (value)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>组成</strong></td>
+<td><code>tgt + query_pos</code></td>
+<td><code>memory + pos</code></td>
+<td><code>memory</code></td>
+</tr>
+<tr>
+<td><strong>角色</strong></td>
+<td>"我要检索什么"</td>
+<td>"我提供了什么可被检索的"</td>
+<td>"检索到后提取什么内容"</td>
+</tr>
+<tr>
+<td><strong>位置信息</strong></td>
+<td>query_pos (可学习)</td>
+<td>pos (正弦编码)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>一个关键设计: <strong>V 不加位置编码</strong>。原因是 attention 的输出将被用作 query 特征更新的增量，应当只包含视觉语义信息。若 V 混入 pos，则位置坐标会通过残差连接"污染"后续层的 query 表示。</p>
+<p><strong>与 Encoder Self-Attention 的对比</strong>:</p>
+<div class="language-text highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Text Only</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-15-1">Encoder Self-Attn: K = Q (同源),   交互范围: image ↔ image
+</span><span id="__span-15-2">Decoder Cross-Attn: K ≠ Q (异源),  交互范围: query  ↔ image
+</span></code></pre></div></td></tr></table></div>
+<hr />
+<h5 id="3-ffn">③ FFN — 逐位置特征变换<a class="headerlink" href="#3-ffn" title="Permanent link">&para;</a></h5>
+<p><strong>源码</strong>:</p>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-16-1"><span class="n">tgt2</span> <span class="o">=</span> <span class="n">Linear</span><span class="p">(</span><span class="mi">2048</span><span class="p">)(</span> <span class="n">ReLU</span><span class="p">(</span> <span class="n">Dropout</span><span class="p">(</span> <span class="n">Linear</span><span class="p">(</span><span class="mi">256</span><span class="p">)(</span><span class="n">tgt</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
+</span><span id="__span-16-2"><span class="n">tgt</span> <span class="o">=</span> <span class="n">LayerNorm</span><span class="p">(</span><span class="n">tgt</span> <span class="o">+</span> <span class="n">dropout</span><span class="p">(</span><span class="n">tgt2</span><span class="p">))</span>
+</span></code></pre></div></td></tr></table></div>
+<p>两层全连接，隐层维度 2048。FFN 对 100 个 query <strong>独立作用</strong>（参数共享但 query 间无交互），将 Cross-Attention 聚合到的跨模态信息做非线性变换和特征整合。</p>
+<hr />
+<h5 id="_5">残差结构<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h5>
+<p>每层的三个子模块均采用 Pre-Norm 或 Post-Norm 的残差连接模式。以 Post-Norm（DETR 默认）为例：</p>
+<div class="language-text highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Text Only</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-17-1">output = LayerNorm( input + Dropout( SubLayer(input) ) )
+</span></code></pre></div></td></tr></table></div>
+<p>残差连接为梯度提供了不经注意力和 FFN 变换的直通路径，使 6 层堆叠在训练中不会出现梯度消失。</p>
+<hr />
+<h5 id="6">6 层堆叠与中间监督<a class="headerlink" href="#6" title="Permanent link">&para;</a></h5>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-18-1"><span class="c1"># TransformerDecoder.forward (transformer.py:95-123)</span>
+</span><span id="__span-18-2"><span class="n">output</span> <span class="o">=</span> <span class="n">tgt</span>                            <span class="c1"># [100, B, 256] 全零</span>
+</span><span id="__span-18-3"><span class="n">intermediate</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-18-4">
+</span><span id="__span-18-5"><span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>               <span class="c1"># 6 个参数独立的 DecoderLayer</span>
+</span><span id="__span-18-6">    <span class="n">output</span> <span class="o">=</span> <span class="n">layer</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">memory</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">query_pos</span><span class="o">=</span><span class="n">query_pos</span><span class="p">)</span>
+</span><span id="__span-18-7">    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_intermediate</span><span class="p">:</span>
+</span><span id="__span-18-8">        <span class="n">intermediate</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">output</span><span class="p">))</span>
+</span><span id="__span-18-9">
+</span><span id="__span-18-10"><span class="n">hs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">intermediate</span><span class="p">)</span>          <span class="c1"># [6, 100, B, 256]</span>
+</span></code></pre></div></td></tr></table></div>
+<p><code>return_intermediate=True</code> 时返回全部 6 层的输出。最后一层作为主预测，前 5 层作为辅助输出（aux_outputs），每层独立进行匈牙利匹配并计算相同的监督损失，实现<strong>深层监督</strong>（deep supervision），加速训练收敛。</p>
+<hr />
+<h5 id="query">query 演化的阶段性特征<a class="headerlink" href="#query" title="Permanent link">&para;</a></h5>
+<p>6 层 Decoder 堆叠的效果可以从 query 表示的演化来理解：</p>
+<div class="language-text highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Text Only</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-19-1">Layer 0: tgt = 0, Cross-Attn 初次从 memory 中检索
+</span><span id="__span-19-2">         → 形成对物体位置的初步感知（粗糙的热力图）
+</span><span id="__span-19-3">
+</span><span id="__span-19-4">Layer 1: Self-Attn 开始形成差异化（query 之间协商分工）
+</span><span id="__span-19-5">         → Cross-Attn 聚焦更精确，query 表示开始分化
+</span><span id="__span-19-6">
+</span><span id="__span-19-7">Layers 2-4: Self-Attn 维持分工一致性
+</span><span id="__span-19-8">            → Cross-Attn 进一步细化定位
+</span><span id="__span-19-9">            → FFN 逐步提取出对分类和回归有用的特征
+</span><span id="__span-19-10">
+</span><span id="__span-19-11">Layer 5: query 表示达到最终质量
+</span><span id="__span-19-12">         → 可直接由 class_embed / bbox_embed 映射为检测结果
+</span></code></pre></div></td></tr></table></div>
+<hr />
+<h5 id="transformer-decoder">与自回归 Transformer Decoder 的本质区别<a class="headerlink" href="#transformer-decoder" title="Permanent link">&para;</a></h5>
+<p>DETR Decoder 不使用 <code>tgt_mask</code>（因果注意力掩码）。这意味着:</p>
+<div class="language-text highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Text Only</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-20-1">自回归 (GPT 等):                   DETR:
+</span><span id="__span-20-2">                    tgt_mask
+</span><span id="__span-20-3">q₀ ← q₀              [1,0,0]       q₀ ─┐
+</span><span id="__span-20-4">q₁ ← q₀,q₁           [1,1,0]       q₁ ─┤
+</span><span id="__span-20-5">q₂ ← q₀,q₁,q₂        [1,1,1]       q₂ ─┼── 全部并行，双向可见
+</span><span id="__span-20-6">...                                  ... │
+</span><span id="__span-20-7">                                     q₉₉ ─┘
+</span></code></pre></div></td></tr></table></div>
+<p>100 个 query <strong>同时、并行、完全可见</strong>，不依赖时序顺序。这使得 DETR 无需自回归地逐个生成检测结果，一次前向即可得到全部预测。</p>
+<h5 id="self-attention">Self-Attention 的隐式去重机制<a class="headerlink" href="#self-attention" title="Permanent link">&para;</a></h5>
+<p>传统检测器依赖 NMS 抑制冗余框，而 DETR 中这一功能由 Self-Attention 隐式完成。Self-Attention 使 query_i 能够感知 query_j 的当前状态——包括其 query_pos 提供的位置偏好和 <code>tgt</code> 中积累的语义信息——从而主动调节自身行为以避免重叠。这一机制的有效性不需要额外的损失项来保证：匈牙利匹配的 1-to-1 分配压力自然促使 query 之间形成差异化。</p>
+<h3 id="43">4.3 预测头<a class="headerlink" href="#43" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>Decoder 输出的 100 个 256 维向量已经包含了所有需要的检测信息。现在只需要两个线性层将它翻译成"类别"和"坐标"。</p>
+</blockquote>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-21-1"><span class="n">hs</span> <span class="o">=</span> <span class="n">hs</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>              <span class="c1"># [6, B, 100, 256]</span>
+</span><span id="__span-21-2">
+</span><span id="__span-21-3"><span class="c1"># 分类头: 每个 query 预测 num_classes+1 个类</span>
+</span><span id="__span-21-4"><span class="c1"># 最后一个是 &quot;no object&quot; 类</span>
+</span><span id="__span-21-5"><span class="n">outputs_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">class_embed</span><span class="p">(</span><span class="n">hs</span><span class="p">)</span>  <span class="c1"># Linear(256, num_classes+1)</span>
+</span><span id="__span-21-6"><span class="c1"># → [6, B, 100, num_classes+1]</span>
+</span><span id="__span-21-7">
+</span><span id="__span-21-8"><span class="c1"># 框回归头: 3层 MLP, 输出 sigmoid 确保在 [0,1]</span>
+</span><span id="__span-21-9"><span class="n">outputs_coord</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox_embed</span><span class="p">(</span><span class="n">hs</span><span class="p">)</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">()</span>
+</span><span id="__span-21-10"><span class="c1"># → [6, B, 100, 4]  (cx, cy, w, h)</span>
+</span></code></pre></div></td></tr></table></div>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-22-1"><span class="n">out</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="__span-22-2">    <span class="s1">&#39;pred_logits&#39;</span><span class="p">:</span> <span class="n">outputs_class</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>   <span class="c1"># 最后一层 → 主输出</span>
+</span><span id="__span-22-3">    <span class="s1">&#39;pred_boxes&#39;</span><span class="p">:</span>  <span class="n">outputs_coord</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+</span><span id="__span-22-4"><span class="p">}</span>
+</span><span id="__span-22-5"><span class="k">if</span> <span class="n">aux_loss</span><span class="p">:</span>
+</span><span id="__span-22-6">    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;aux_outputs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>             <span class="c1"># 前 5 层 → 辅助输出</span>
+</span><span id="__span-22-7">        <span class="p">{</span><span class="s1">&#39;pred_logits&#39;</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span> <span class="s1">&#39;pred_boxes&#39;</span><span class="p">:</span> <span class="o">...</span><span class="p">}</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span><span id="__span-22-8">    <span class="p">]</span>
+</span></code></pre></div></td></tr></table></div>
+<hr />
+<h2 id="_6">五、匈牙利匹配<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>DETR 的核心创新之一：用<strong>二分图最优匹配</strong>替代 anchor → IoU → NMS 的手工流程。</p>
+<h3 id="51">5.1 代价矩阵构建<a class="headerlink" href="#51" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-23-1"><span class="c1"># 展平 batch 维度方便计算</span>
+</span><span id="__span-23-2"><span class="n">out_prob</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;pred_logits&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [B×100, num_classes+1]</span>
+</span><span id="__span-23-3"><span class="n">out_bbox</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;pred_boxes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>                <span class="c1"># [B×100, 4]</span>
+</span><span id="__span-23-4"><span class="n">tgt_ids</span>  <span class="o">=</span> <span class="n">concat</span><span class="p">(</span><span class="n">targets</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">])</span>                         <span class="c1"># [total_gt]</span>
+</span><span id="__span-23-5"><span class="n">tgt_bbox</span> <span class="o">=</span> <span class="n">concat</span><span class="p">(</span><span class="n">targets</span><span class="p">[</span><span class="s2">&quot;boxes&quot;</span><span class="p">])</span>                          <span class="c1"># [total_gt, 4]</span>
+</span></code></pre></div></td></tr></table></div>
+<p>三种代价:</p>
+<table>
+<thead>
+<tr>
+<th>代价</th>
+<th>公式</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>分类代价</td>
+<td><code>C_cls = -out_prob[:, tgt_ids]</code></td>
+<td>预测越确信真实类，代价越小</td>
+</tr>
+<tr>
+<td>L1 代价</td>
+<td><code>C_bbox = ∥out_bbox - tgt_bbox∥₁</code></td>
+<td>框坐标的 L1 距离</td>
+</tr>
+<tr>
+<td>GIoU 代价</td>
+<td><code>C_giou = -GIoU(out, tgt)</code></td>
+<td>框重叠度（GIoU 越高代价越小）</td>
+</tr>
+</tbody>
+</table>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-24-1"><span class="n">C</span> <span class="o">=</span> <span class="mi">5</span> <span class="err">×</span> <span class="n">C_bbox</span> <span class="o">+</span> <span class="mi">1</span> <span class="err">×</span> <span class="n">C_cls</span> <span class="o">+</span> <span class="mi">2</span> <span class="err">×</span> <span class="n">C_giou</span>       <span class="c1"># 默认权重</span>
+</span></code></pre></div></td></tr></table></div>
+<h3 id="52">5.2 最优匹配<a class="headerlink" href="#52" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-25-1"><span class="c1"># 对每张图片独立求解</span>
+</span><span id="__span-25-2"><span class="n">C</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>                         <span class="c1"># 恢复 batch 维度</span>
+</span><span id="__span-25-3"><span class="n">sizes</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s2">&quot;boxes&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">]</span>
+</span><span id="__span-25-4"><span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">linear_sum_assignment</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>          <span class="c1"># scipy 匈牙利算法</span>
+</span><span id="__span-25-5">           <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sizes</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))]</span>
+</span><span id="__span-25-6">
+</span><span id="__span-25-7"><span class="c1"># 返回: [(pred_idx, tgt_idx), ...]  每个元素对应一张图的匹配对</span>
+</span></code></pre></div></td></tr></table></div>
+<blockquote>
+<p>匈牙利算法保证找到<strong>全局代价最小</strong>的二分图匹配，复杂度 O(n³)。</p>
+</blockquote>
+<hr />
+<h2 id="_7">六、损失计算<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<h3 id="61">6.1 总损失公式<a class="headerlink" href="#61" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Text Only</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-26-1">L_total = λ_ce × L_ce + λ_bbox × L_bbox + λ_giou × L_giou
+</span><span id="__span-26-2">        = 1 × L_ce   +   5 × L_bbox  +   2 × L_giou
+</span></code></pre></div></td></tr></table></div>
+<h3 id="62-loss_labels">6.2 分类损失 (<code>loss_labels</code>)<a class="headerlink" href="#62-loss_labels" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-27-1"><span class="c1"># 构建 target: 所有 100 个预测初始化为 no-object 类</span>
+</span><span id="__span-27-2"><span class="n">target_classes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">B</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">num_classes</span><span class="p">)</span>     <span class="c1"># 全部 = no-object</span>
+</span><span id="__span-27-3">
+</span><span id="__span-27-4"><span class="c1"># 匹配到的位置填入真实类别</span>
+</span><span id="__span-27-5"><span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch_idx</span><span class="p">,</span> <span class="n">src_idx</span><span class="p">)</span>   <span class="c1"># 提取匹配到的预测索引</span>
+</span><span id="__span-27-6"><span class="n">target_classes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">matched_target_classes</span>
+</span><span id="__span-27-7">
+</span><span id="__span-27-8"><span class="c1"># CrossEntropy 作用于全部 100 个预测</span>
+</span><span id="__span-27-9"><span class="n">loss_ce</span> <span class="o">=</span> <span class="n">CrossEntropy</span><span class="p">(</span><span class="n">pred_logits</span><span class="p">,</span> <span class="n">target_classes</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">empty_weight</span><span class="p">)</span>
+</span></code></pre></div></td></tr></table></div>
+<p><strong>no-object 权重处理</strong>: <code>empty_weight[-1] = eos_coef = 0.1</code></p>
+<blockquote>
+<p>因为负样本远多于正样本（100 个预测中通常只有几个匹配到），给 no-object 类降权防止分类器过于偏向预测背景。</p>
+</blockquote>
+<h3 id="63-loss_boxes">6.3 框回归损失 (<code>loss_boxes</code>)<a class="headerlink" href="#63-loss_boxes" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-28-1"><span class="c1"># 只取匹配到的预测</span>
+</span><span id="__span-28-2"><span class="n">src_boxes</span> <span class="o">=</span> <span class="n">pred_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>          <span class="c1"># [num_matched, 4]</span>
+</span><span id="__span-28-3"><span class="n">tgt_boxes</span> <span class="o">=</span> <span class="n">concat</span><span class="p">(</span><span class="n">tgt_boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>   <span class="c1"># [num_matched, 4]</span>
+</span><span id="__span-28-4">
+</span><span id="__span-28-5"><span class="c1"># L1 回归损失</span>
+</span><span id="__span-28-6"><span class="n">loss_bbox</span> <span class="o">=</span> <span class="n">L1Loss</span><span class="p">(</span><span class="n">src_boxes</span><span class="p">,</span> <span class="n">tgt_boxes</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">num_boxes</span>
+</span><span id="__span-28-7">
+</span><span id="__span-28-8"><span class="c1"># GIoU 损失 (1 - GIoU 的均值)</span>
+</span><span id="__span-28-9"><span class="c1"># 先转回 xyxy 格式才能计算 GIoU</span>
+</span><span id="__span-28-10"><span class="n">loss_giou</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">GIoU</span><span class="p">(</span><span class="n">cxcywh</span><span class="err">→</span><span class="n">xyxy</span><span class="p">(</span><span class="n">src_boxes</span><span class="p">),</span>
+</span><span id="__span-28-11">                       <span class="n">cxcywh</span><span class="err">→</span><span class="n">xyxy</span><span class="p">(</span><span class="n">tgt_boxes</span><span class="p">))</span><span class="o">.</span><span class="n">diag</span><span class="p">())</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">num_boxes</span>
+</span></code></pre></div></td></tr></table></div>
+<p><code>num_boxes</code> 归一化: 分布式训练时所有 GPU 的 GT 数量 all_reduce 后取平均，确保每张卡梯度尺度一致。</p>
+<h3 id="64-auxiliary-loss">6.4 辅助损失 (Auxiliary Loss)<a class="headerlink" href="#64-auxiliary-loss" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-29-1"><span class="k">if</span> <span class="s1">&#39;aux_outputs&#39;</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
+</span><span id="__span-29-2">    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">aux</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;aux_outputs&#39;</span><span class="p">]):</span>  <span class="c1"># 遍历前 5 层</span>
+</span><span id="__span-29-3">        <span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">matcher</span><span class="p">(</span><span class="n">aux</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>           <span class="c1"># 每层独立匹配!</span>
+</span><span id="__span-29-4">        <span class="c1"># 计算相同损失，key 加后缀 _0, _1, _2, _3, _4</span>
+</span></code></pre></div></td></tr></table></div>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>主损失</th>
+<th>辅助损失</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据来源</td>
+<td>Decoder 最后一层</td>
+<td>Decoder 前 5 层</td>
+</tr>
+<tr>
+<td>匹配方式</td>
+<td>匈牙利匹配</td>
+<td>每层独立匹配</td>
+</tr>
+<tr>
+<td>权重</td>
+<td>λ (1/5/2)</td>
+<td>相同权重</td>
+</tr>
+<tr>
+<td>作用</td>
+<td>最终输出监督</td>
+<td>加速收敛, 深层监督</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_8">七、训练流程<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<h3 id="71">7.1 一次训练迭代<a class="headerlink" href="#71" title="Permanent link">&para;</a></h3>
+<div class="language-python highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Python</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-30-1"><span class="c1"># engine.py: train_one_epoch</span>
+</span><span id="__span-30-2"><span class="k">for</span> <span class="n">samples</span><span class="p">,</span> <span class="n">targets</span> <span class="ow">in</span> <span class="n">data_loader</span><span class="p">:</span>
+</span><span id="__span-30-3">    <span class="n">samples</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+</span><span id="__span-30-4">    <span class="n">targets</span> <span class="o">=</span> <span class="p">[{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">]</span>
+</span><span id="__span-30-5">
+</span><span id="__span-30-6">    <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>                          <span class="c1"># 前向</span>
+</span><span id="__span-30-7">    <span class="n">loss_dict</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>            <span class="c1"># 损失</span>
+</span><span id="__span-30-8">    <span class="n">losses</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">loss_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">weight_dict</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>        <span class="c1"># 加权求和</span>
+</span><span id="__span-30-9">
+</span><span id="__span-30-10">    <span class="n">losses</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>                                  <span class="c1"># 反向</span>
+</span><span id="__span-30-11">
+</span><span id="__span-30-12">    <span class="n">clip_grad_norm_</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">max_norm</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># 梯度裁剪</span>
+</span><span id="__span-30-13">    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>                                   <span class="c1"># 参数更新</span>
+</span></code></pre></div></td></tr></table></div>
+<h3 id="72">7.2 训练配置速查<a class="headerlink" href="#72" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>超参数</th>
+<th>值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>优化器</td>
+<td>AdamW</td>
+<td>lr=1e-4, backbone lr=1e-5</td>
+</tr>
+<tr>
+<td>权重衰减</td>
+<td>1e-4</td>
+<td></td>
+</tr>
+<tr>
+<td>梯度裁剪</td>
+<td>0.1</td>
+<td>max_norm</td>
+</tr>
+<tr>
+<td>LR 调度</td>
+<td>StepLR</td>
+<td>epoch 200 衰减</td>
+</tr>
+<tr>
+<td>总 epochs</td>
+<td>300</td>
+<td></td>
+</tr>
+<tr>
+<td>Batch size</td>
+<td>2 (默认)</td>
+<td>单卡</td>
+</tr>
+<tr>
+<td>num_queries</td>
+<td>100</td>
+<td>每次最多检测 100 个物体</td>
+</tr>
+<tr>
+<td>d_model</td>
+<td>256</td>
+<td>Transformer 隐层维度</td>
+</tr>
+<tr>
+<td>Encoder 层数</td>
+<td>6</td>
+<td></td>
+</tr>
+<tr>
+<td>Decoder 层数</td>
+<td>6</td>
+<td></td>
+</tr>
+<tr>
+<td>注意力头数</td>
+<td>8</td>
+<td></td>
+</tr>
+<tr>
+<td>FFN 隐层</td>
+<td>2048</td>
+<td></td>
+</tr>
+<tr>
+<td>dropout</td>
+<td>0.1</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_9">八、维度变化速查表<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>张量形状</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>原始图像</td>
+<td>[H, W, 3]</td>
+<td>PIL Image</td>
+</tr>
+<tr>
+<td>预处理后</td>
+<td>[B, 3, H_pad, W_pad]</td>
+<td>pad 到同尺寸</td>
+</tr>
+<tr>
+<td>Backbone 输出</td>
+<td>[B, 2048, H/32, W/32]</td>
+<td>ResNet-50 layer4</td>
+</tr>
+<tr>
+<td>input_proj 后</td>
+<td>[B, 256, H/32, W/32]</td>
+<td>1×1 conv 降维</td>
+</tr>
+<tr>
+<td>Encoder 输入</td>
+<td>[H/32×W/32, B, 256]</td>
+<td>展平为序列</td>
+</tr>
+<tr>
+<td>Position Embedding</td>
+<td>[B, 256, H/32, W/32]</td>
+<td>sin/cos 编码</td>
+</tr>
+<tr>
+<td>Query Embedding</td>
+<td>[100, B, 256]</td>
+<td>可学习的 N 个查询</td>
+</tr>
+<tr>
+<td>Decoder 输出</td>
+<td><strong>[6, B, 100, 256]</strong></td>
+<td>6 层全部输出</td>
+</tr>
+<tr>
+<td>pred_logits</td>
+<td>[6, B, 100, num_classes+1]</td>
+<td>含 no-object 类</td>
+</tr>
+<tr>
+<td>pred_boxes</td>
+<td>[6, B, 100, 4]</td>
+<td>cx, cy, w, h ∈ [0,1]</td>
+</tr>
+<tr>
+<td>匹配代价矩阵</td>
+<td>[B, 100, total_gt]</td>
+<td>匈牙利算法输入</td>
+</tr>
+<tr>
+<td>损失标量</td>
+<td>单个 float</td>
+<td>加权求和结果</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="detr_1">九、DETR 的设计亮点<a class="headerlink" href="#detr_1" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p><strong>端到端，无手工组件</strong>: 没有 anchor、没有 NMS、没有 RoI pooling，整个 pipeline 只用 NN 模块搭建</p>
+</li>
+<li>
+<p><strong>集合预测</strong>: 固定输出 100 个预测结果，用匈牙利匹配解决标签分配，摆脱了传统 one-to-many 匹配 + NMS 的流程</p>
+</li>
+<li>
+<p><strong>全局上下文</strong>: Transformer 的自注意力机制让每个检测框都能利用整张图的信息，天然适合处理遮挡、大物体等场景</p>
+</li>
+<li>
+<p><strong>并行解码</strong>: Decoder 一次性输出全部 100 个结果，不像自回归模型需要逐个生成</p>
+</li>
+<li>
+<p><strong>深层监督</strong>: 辅助损失让每个 decoder 层都能直接接收监督信号，加速收敛</p>
+</li>
+</ol>
+<h2 id="_10">十、局限性<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<ul>
+<li>小物体检测性能较差（Transformer 缺少多尺度特征）</li>
+<li>训练收敛慢（需要 300 epochs vs 传统方法的 12-36 epochs）</li>
+<li>需要大量训练数据</li>
+</ul>
+<blockquote>
+<p>后续工作 <strong>Deformable DETR</strong> 通过可变形注意力解决了收敛慢和多尺度问题，大幅提升了小物体检测性能。</p>
+</blockquote>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.top", "navigation.indexes", "navigation.expand", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit", "navigation.path"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../../mkdocs/javascripts/katex.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/contrib/auto-render.min.js"></script>
+      
+    
+  </body>
+</html>

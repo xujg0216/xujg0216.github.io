@@ -1,0 +1,8586 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="XUJG Site">
+      
+      
+        <meta name="author" content="xujg">
+      
+      
+        <link rel="canonical" href="https://xjg-0216.github.io/algorithms/llm/09-vllm_serve_args/">
+      
+      
+        <link rel="prev" href="../08-paged-kv-cache/">
+      
+      
+        <link rel="next" href="../../rag/01-rag-setup-overview/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>vLLM Serve 参数全解（详细版） - XUJG Site</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css">
+    
+      <link rel="stylesheet" href="../../../mkdocs/css/no-footer.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#vllm-serve" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../.." title="XUJG Site" class="md-header__button md-logo" aria-label="XUJG Site" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            XUJG Site
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              vLLM Serve 参数全解（详细版）
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="orange"  aria-label="切换至夜间模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至夜间模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="orange"  aria-label="切换至日间模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至日间模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Xjg-0216/xjg-0216.github.io" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xjg-0216.github.io
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../GIT/01-git-basics/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  GIT
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../TOOL/system/01-apt/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  工具
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../C%2B%2B/vscode/00-make/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  C++
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../classical-cv/01-isp-pipeline/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  传统图像处理
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../deep-learning/01-transformer/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  深度学习基础
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../01-miniGPT/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  算法
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../deploy/01-rknn/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  模型部署
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="XUJG Site" class="md-nav__button md-logo" aria-label="XUJG Site" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    XUJG Site
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Xjg-0216/xjg-0216.github.io" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xjg-0216.github.io
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GIT
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    GIT
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../GIT/01-git-basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Git 基础
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../GIT/02-git-branch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    分支管理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../GIT/03-git-remote/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程仓库
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../GIT/04-git-lfs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Git LFS
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工具
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    工具
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    系统管理
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    系统管理
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/system/01-apt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    apt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/system/02-proxy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    网络代理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/system/03-mount/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    挂载硬盘
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/system/04-tar/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    tar/zip
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Docker
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/docker/01-docker-install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    docker安装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/docker/02-docker-commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    docker基本命令
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程操作
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    远程操作
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/remote/01-scp-rsync/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    远程文件传输
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/remote/02-byobu/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    byobu
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发环境
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    开发环境
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/dev/conda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conda 命令
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/dev/vscode-remote-auto-conn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vscode远程免密连接
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RK3588
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    RK3588
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TOOL/rk3588/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RK3588烧录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C++
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    C++
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    编译工具链
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    编译工具链
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/00-make/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    零 CMake&amp;make&amp;Makefile
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/01-g%2B%2B/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    一 Linux中编译C++
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/02-compile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    二 Linux C++命令行编译
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/03-dbg/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    三 GDB调试器
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/04-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    四 Linux C++命令行调试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/05-cmake/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    五 CMake的语法特性与常用变量
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/06-cmake-compile-step/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    六 CMake编译流程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/07-cmake-compile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    七 CMake项目编译实战
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/08-vscode-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    八 VSCode中调试C++程序
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/vscode/09-vscode-appendix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    九 附录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    语法
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    语法
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/00-stl/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/01-class1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    一 类-封装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/02-class2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    二 类-继承
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/03-class3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    三 类-多态
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/04-memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    四 内存分配与释放
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/05-argv/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    五 命令行参数
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/06-char/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    六 char 和 string
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/07-const/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    七 const
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/08-point_reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    八 指针与引用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/09-type_modify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    九 类型修饰符
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/10-type_convert/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    十 类型转换
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/11-define/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    十一 预处理器与宏定义
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/12-multi_thread/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    十二 多线程与线程池
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/13-lambda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    lambda函数
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/14-linking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    静态编译和动态编译
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/15-std_function/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    std::function&lt;void()&gt;
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/16-l_r_value/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    左值和右值
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/17-function_template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    函数模板
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/18-std_bind/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    std::bind
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/19-std_result_of/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    std::result_of
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/20-std_packaged_task/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    std::packaged_task
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/21-hdf5/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HDF5
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/22-question/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    c++常见问题
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../C%2B%2B/23-read/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    读取文件
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    传统图像处理
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    传统图像处理
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../classical-cv/01-isp-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ISP Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../classical-cv/02-opencv-mat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    cv::Mat 容器
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../classical-cv/03-imaging-basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    成像基础
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    深度学习基础
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    深度学习基础
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/01-transformer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    transformer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/02-ViT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ViT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/03-bert/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    03 bert
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/04-mae/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    04 mae
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/05-gpt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    05 gpt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/06-rnn_lstm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RNN
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/07-DDPM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    扩散模型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/08-bigram/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    bigram language model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/09-LLM%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM主要内容
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deep-learning/10-ollama%E4%BD%BF%E7%94%A8/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ollama 使用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    算法
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    算法
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    LLM
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-miniGPT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    miniGPT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-nanoGPT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    nanogpt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-mfu/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MFU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-ROPE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RoPE：旋转位置编码
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-run-qwen3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从零手写 Qwen3 推理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-refactor-to-package/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从单文件到模块化框架 — run_qwen3.py 重构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-kv-cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    KV Cache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-paged-kv-cache/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Paged KV Cache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    vLLM Serve 参数全解（详细版）
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    vLLM Serve 参数全解（详细版）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        目录
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        选项参数 (Options)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#frontend-openai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend — OpenAI 兼容前端
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Frontend — OpenAI 兼容前端">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        网络
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#https-ssl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTPS / SSL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        安全
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API 行为
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        工具调用解析器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lora" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LoRA 模块预加载
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        中间件
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        日志与调试
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#http" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP 协议限制
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modelconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ModelConfig — 模型配置
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ModelConfig — 模型配置">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        模型选择
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        精度
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        上下文与长度
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        量化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#huggingface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HuggingFace 集成
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tokenizer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tokenizer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        生成配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        其他模型配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loadconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LoadConfig — 权重加载配置
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LoadConfig — 权重加载配置">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        加载格式
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        加载优化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        高级
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#attentionconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AttentionConfig — 注意力配置
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#structuredoutputsconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StructuredOutputsConfig — 结构化输出
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parallelconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ParallelConfig — 并行配置
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ParallelConfig — 并行配置">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        张量并行 (TP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数据并行 (DP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        上下文并行 (CP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        专家并行 (EP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dbo-dual-batch-overlap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DBO (Dual Batch Overlap)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        多节点
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cacheconfig-kv-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CacheConfig — KV Cache 配置
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CacheConfig — KV Cache 配置">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        内存控制
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数据类型
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        前缀缓存
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kv-cache-cpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KV Cache CPU 卸载
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mamba" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mamba 缓存
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实验性
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#offloadconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OffloadConfig — 权重卸载
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OffloadConfig — 权重卸载">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uva-unified-virtual-addressing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UVA (Unified Virtual Addressing) 零拷贝卸载
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefetch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prefetch 卸载
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multimodalconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MultiModalConfig — 多模态
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MultiModalConfig — 多模态">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        输入控制
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        编码器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        缓存与处理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        安全
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loraconfig-lora" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LoRAConfig — LoRA 适配器
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observabilityconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ObservabilityConfig — 可观测性
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ObservabilityConfig — 可观测性">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        指标
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        追踪与日志
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schedulerconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SchedulerConfig — 调度器
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SchedulerConfig — 调度器">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        并发控制
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chunked-prefill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chunked Prefill
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        调度策略
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        流式输出
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_30" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        其他
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compilationconfig-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CompilationConfig — 编译与 CUDA 图
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CompilationConfig — 编译与 CUDA 图">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        便捷写法
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        顶层编译控制
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CUDA 图
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inductor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inductor 编译
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        其他
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_34" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        便捷启动参数
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kernelconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KernelConfig — 内核选择
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vllmconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VllmConfig — 顶级配置容器
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="VllmConfig — 顶级配置容器">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_35" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        性能模式
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_36" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        投机解码
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_37" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        分析与调试
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_38" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        结构化输出
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_39" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        注意力详细配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_40" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        编译配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        分布式 KV/权重传输
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        JSON 参数语法
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        常用场景速查表
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    RAG
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rag/01-rag-setup-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG 设置概览详解
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rag/02-rag-multi-query/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG 多查询技术详解
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rag/03-rag-routing-query/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG 路由与查询构建详解
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rag/04-rag-indexing-retrieval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG 索引与高级检索详解
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rag/05-rag-retrieval-reranking/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG 检索与重排序详解
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_3" id="__nav_6_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    计算机视觉
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    计算机视觉
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cv/01-bytetrack/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ByteTrack跟踪算法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cv/02-netvlad/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NetVLAD向量聚合
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cv/03-DETR/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DETR (DEtection TRansformer)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模型部署
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    模型部署
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deploy/01-rknn/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RKNN
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../deploy/02-onnx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ONNX
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        目录
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        选项参数 (Options)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#frontend-openai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend — OpenAI 兼容前端
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Frontend — OpenAI 兼容前端">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        网络
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#https-ssl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTPS / SSL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        安全
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API 行为
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        工具调用解析器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lora" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LoRA 模块预加载
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        中间件
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        日志与调试
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#http" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP 协议限制
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modelconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ModelConfig — 模型配置
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ModelConfig — 模型配置">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        模型选择
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        精度
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        上下文与长度
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        量化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#huggingface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HuggingFace 集成
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tokenizer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tokenizer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        生成配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        其他模型配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loadconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LoadConfig — 权重加载配置
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LoadConfig — 权重加载配置">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        加载格式
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        加载优化
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        高级
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#attentionconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AttentionConfig — 注意力配置
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#structuredoutputsconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StructuredOutputsConfig — 结构化输出
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#parallelconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ParallelConfig — 并行配置
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ParallelConfig — 并行配置">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        张量并行 (TP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数据并行 (DP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        上下文并行 (CP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        专家并行 (EP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dbo-dual-batch-overlap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DBO (Dual Batch Overlap)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        多节点
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cacheconfig-kv-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CacheConfig — KV Cache 配置
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CacheConfig — KV Cache 配置">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        内存控制
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数据类型
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        前缀缓存
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kv-cache-cpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KV Cache CPU 卸载
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mamba" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mamba 缓存
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        实验性
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#offloadconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OffloadConfig — 权重卸载
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OffloadConfig — 权重卸载">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uva-unified-virtual-addressing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UVA (Unified Virtual Addressing) 零拷贝卸载
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefetch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prefetch 卸载
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multimodalconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MultiModalConfig — 多模态
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MultiModalConfig — 多模态">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        输入控制
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        编码器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        缓存与处理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        安全
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loraconfig-lora" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LoRAConfig — LoRA 适配器
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observabilityconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ObservabilityConfig — 可观测性
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ObservabilityConfig — 可观测性">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        指标
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        追踪与日志
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schedulerconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SchedulerConfig — 调度器
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SchedulerConfig — 调度器">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        并发控制
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chunked-prefill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chunked Prefill
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        调度策略
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        流式输出
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_30" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        其他
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compilationconfig-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CompilationConfig — 编译与 CUDA 图
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CompilationConfig — 编译与 CUDA 图">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        便捷写法
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        顶层编译控制
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CUDA 图
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inductor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inductor 编译
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        其他
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_34" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        便捷启动参数
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kernelconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KernelConfig — 内核选择
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vllmconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VllmConfig — 顶级配置容器
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="VllmConfig — 顶级配置容器">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_35" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        性能模式
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_36" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        投机解码
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_37" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        分析与调试
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_38" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        结构化输出
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_39" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        注意力详细配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_40" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        编译配置
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        分布式 KV/权重传输
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        JSON 参数语法
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        常用场景速查表
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+
+  <nav class="md-path" aria-label="导航栏" >
+    <ol class="md-path__list">
+      
+      
+        
+  
+  
+    
+    
+      
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../01-miniGPT/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    算法
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../01-miniGPT/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    LLM
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/Xjg-0216/xjg-0216.github.io/edit/main/docs/algorithms/llm/09-vllm_serve_args.md" title="编辑此页" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="vllm-serve">vLLM Serve 参数全解（详细版）<a class="headerlink" href="#vllm-serve" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>版本: vLLM 0.18.0 | 命令: <code>vllm serve --help=all</code></p>
+</blockquote>
+<hr />
+<h2 id="_1">目录<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="#选项参数-options">选项参数 (Options)</a></li>
+<li><a href="#frontend--openai-兼容前端">Frontend — OpenAI 兼容前端</a></li>
+<li><a href="#modelconfig--模型配置">ModelConfig — 模型配置</a></li>
+<li><a href="#loadconfig--权重加载配置">LoadConfig — 权重加载配置</a></li>
+<li><a href="#attentionconfig--注意力配置">AttentionConfig — 注意力配置</a></li>
+<li><a href="#structuredoutputsconfig--结构化输出">StructuredOutputsConfig — 结构化输出</a></li>
+<li><a href="#parallelconfig--并行配置">ParallelConfig — 并行配置</a></li>
+<li><a href="#cacheconfig--kv-cache-配置">CacheConfig — KV Cache 配置</a></li>
+<li><a href="#offloadconfig--权重卸载">OffloadConfig — 权重卸载</a></li>
+<li><a href="#multimodalconfig--多模态">MultiModalConfig — 多模态</a></li>
+<li><a href="#loraconfig--lora-适配器">LoRAConfig — LoRA 适配器</a></li>
+<li><a href="#observabilityconfig--可观测性">ObservabilityConfig — 可观测性</a></li>
+<li><a href="#schedulerconfig--调度器">SchedulerConfig — 调度器</a></li>
+<li><a href="#compilationconfig--编译与-cuda-图">CompilationConfig — 编译与 CUDA 图</a></li>
+<li><a href="#kernelconfig--内核选择">KernelConfig — 内核选择</a></li>
+<li><a href="#vllmconfig--顶级配置容器">VllmConfig — 顶级配置容器</a></li>
+</ul>
+<hr />
+<h2 id="options">选项参数 (Options)<a class="headerlink" href="#options" title="Permanent link">&para;</a></h2>
+<p>顶层杂项参数，不属于任何配置组。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>model_tag</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>位置参数，模型名或路径。不传则用 <code>--model</code> 的值（默认为 <code>Qwen/Qwen3-0.6B</code>）</td>
+</tr>
+<tr>
+<td><code>--config</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>YAML 配置文件路径，可替代命令行传参。文档：https://docs.vllm.ai/en/latest/configuration/serve_args.html</td>
+</tr>
+<tr>
+<td><code>--disable-log-stats</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>禁用统计日志（定期打印的吞吐/延迟统计）。可减少日志噪音</td>
+</tr>
+<tr>
+<td><code>--enable-log-requests</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>记录请求详情。INFO 级别记录请求 ID/参数/LoRA；DEBUG 级别记录 prompt 原文。通过 <code>VLLM_LOGGING_LEVEL</code> 控制</td>
+</tr>
+<tr>
+<td><code>--fail-on-environ-validation</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>如果环境校验失败（如显存不足），直接报错退出而非降级运行</td>
+</tr>
+<tr>
+<td><code>--aggregate-engine-logging</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>数据并行时汇总所有 engine 的统计而非分别打印</td>
+</tr>
+<tr>
+<td><code>--api-server-count / -asc</code></td>
+<td><code>int</code></td>
+<td><code>None</code></td>
+<td>API 服务进程数。默认 = <code>data_parallel_size</code>。提高可增加 HTTP 处理能力</td>
+</tr>
+<tr>
+<td><code>--gdn-prefill-backend</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>GDN prefill 后端。可选 <code>flashinfer</code> / <code>triton</code>。一般不需要设</td>
+</tr>
+<tr>
+<td><code>--grpc</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>启动 gRPC 服务取代 HTTP。需 <code>pip install vllm[grpc]</code></td>
+</tr>
+<tr>
+<td><code>--headless</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>无头模式。用于多节点数据并行的从节点。见多节点 DP 文档</td>
+</tr>
+<tr>
+<td><code>--shutdown-timeout</code></td>
+<td><code>int</code></td>
+<td><code>0</code></td>
+<td>优雅关闭超时（秒）。<code>0</code> = 立即中止；<code>&gt;0</code> = 等待这么久后再强制 kill</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="frontend-openai">Frontend — OpenAI 兼容前端<a class="headerlink" href="#frontend-openai" title="Permanent link">&para;</a></h2>
+<p>控制 HTTP/HTTPS 服务的网络、安全、API 行为。vLLM 启动后提供与 OpenAI 完全兼容的 REST API。</p>
+<h3 id="_2">网络<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--host</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>监听地址。<code>0.0.0.0</code> 表示接受所有网络接口的连接。不设则仅本地</td>
+</tr>
+<tr>
+<td><code>--port</code></td>
+<td><code>int</code></td>
+<td><code>8000</code></td>
+<td>HTTP 服务端口</td>
+</tr>
+<tr>
+<td><code>--uds</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>Unix Domain Socket 路径。如果设置了此项，<code>host</code> 和 <code>port</code> 会被忽略。适用于同一台机器上的进程间高性能通信</td>
+</tr>
+<tr>
+<td><code>--root-path</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>FastAPI <code>root_path</code>。当服务运行在反向代理后面且路径被重写时使用。如 nginx 上 <code>/api/v1</code> → <code>/</code> 的场景</td>
+</tr>
+</tbody>
+</table>
+<h3 id="https-ssl">HTTPS / SSL<a class="headerlink" href="#https-ssl" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--ssl-certfile</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>SSL 证书文件路径（PEM 格式）</td>
+</tr>
+<tr>
+<td><code>--ssl-keyfile</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>SSL 私钥文件路径</td>
+</tr>
+<tr>
+<td><code>--ssl-ca-certs</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>CA 证书文件，用于验证客户端证书（mTLS）</td>
+</tr>
+<tr>
+<td><code>--ssl-cert-reqs</code></td>
+<td><code>int</code></td>
+<td><code>0</code></td>
+<td>是否要求客户端证书。<code>0</code>=不需要，<code>1</code>=可选，<code>2</code>=必须（见 Python ssl 模块文档）</td>
+</tr>
+<tr>
+<td><code>--ssl-ciphers</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>SSL 加密套件（仅 TLS 1.2 及以下）。例：<code>'ECDHE-RSA-AES256-GCM-SHA384'</code></td>
+</tr>
+<tr>
+<td><code>--enable-ssl-refresh</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>证书文件变更时自动刷新 SSL 上下文，无需重启服务</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_3">安全<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--api-key</code></td>
+<td><code>list[str]</code></td>
+<td><code>None</code></td>
+<td>API 密钥（可多个）。设置后客户端必须在请求头中携带 <code>Authorization: Bearer &lt;key&gt;</code></td>
+</tr>
+<tr>
+<td><code>--allowed-origins</code></td>
+<td><code>list[str]</code></td>
+<td><code>['*']</code></td>
+<td>CORS 允许的源（Origin）。生产环境建议限制为具体域名</td>
+</tr>
+<tr>
+<td><code>--allowed-headers</code></td>
+<td><code>list[str]</code></td>
+<td><code>['*']</code></td>
+<td>CORS 允许的请求头</td>
+</tr>
+<tr>
+<td><code>--allowed-methods</code></td>
+<td><code>list[str]</code></td>
+<td><code>['*']</code></td>
+<td>CORS 允许的 HTTP 方法</td>
+</tr>
+<tr>
+<td><code>--allow-credentials</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>CORS 是否允许发送凭据（Cookie、Authorization 头等）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="api">API 行为<a class="headerlink" href="#api" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--response-role</code></td>
+<td><code>str</code></td>
+<td><code>assistant</code></td>
+<td>响应中 assistant 消息的 role 字段值</td>
+</tr>
+<tr>
+<td><code>--chat-template</code></td>
+<td><code>str</code></td>
+<td>自动</td>
+<td>自定义 chat 模板文件路径。覆盖模型的默认 chat template</td>
+</tr>
+<tr>
+<td><code>--chat-template-content-format</code></td>
+<td><code>str</code></td>
+<td><code>auto</code></td>
+<td>chat 模板的内容格式：<code>auto</code>、<code>openai</code>（结构化内容）、<code>string</code>（纯文本）</td>
+</tr>
+<tr>
+<td><code>--default-chat-template-kwargs</code></td>
+<td><code>JSON</code></td>
+<td><code>None</code></td>
+<td>传递给 chat 模板的默认参数。如 <code>{"enable_thinking": false}</code> 可关闭 Qwen3 的思考模式</td>
+</tr>
+<tr>
+<td><code>--trust-request-chat-template</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>是否信任客户端在请求中传入的 chat template。有安全风险，仅受信环境使用</td>
+</tr>
+<tr>
+<td><code>--return-tokens-as-token-ids</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>响应中以 token ID 列表形式返回生成内容</td>
+</tr>
+<tr>
+<td><code>--tokens-only</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>只返回 token ID，不返回解码后的文本</td>
+</tr>
+<tr>
+<td><code>--enable-auto-tool-choice</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>当请求中提供了 tools 但未指定 <code>tool_choice</code> 时，自动选择是否调用工具</td>
+</tr>
+<tr>
+<td><code>--enable-request-id-headers</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>在响应头中附加 <code>X-Request-Id</code>，方便追踪</td>
+</tr>
+<tr>
+<td><code>--enable-server-load-tracking</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>服务端负载追踪</td>
+</tr>
+<tr>
+<td><code>--enable-prompt-tokens-details</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>在 usage 中返回 prompt token 的详细信息</td>
+</tr>
+<tr>
+<td><code>--enable-force-include-usage</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>流式输出中也强制包含最终 usage 统计</td>
+</tr>
+<tr>
+<td><code>--enable-log-outputs</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>日志中记录模型输出文本内容</td>
+</tr>
+<tr>
+<td><code>--enable-log-deltas</code></td>
+<td><code>bool</code></td>
+<td><code>True</code></td>
+<td>日志中记录流式输出的增量 token</td>
+</tr>
+<tr>
+<td><code>--enable-tokenizer-info-endpoint</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>启用 tokenizer 信息查询的 API 端点</td>
+</tr>
+<tr>
+<td><code>--exclude-tools-when-tool-choice-none</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td><code>tool_choice="none"</code> 时请求是否去除 tools 定义（减少 prompt 长度）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_4">工具调用解析器<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--tool-call-parser</code></td>
+<td><code>str</code></td>
+<td>自动</td>
+<td>指定 tool call 解析器。vLLM 内置支持 30+ 模型的 tool call 格式。常用：<code>deepseek_v3</code>、<code>llama3_json</code>、<code>qwen3_coder</code>、<code>mistral</code>、<code>openai</code>、<code>hermes</code>。完整列表：<code>deepseek_v3/v31/v32</code>、<code>ernie45</code>、<code>functiongemma</code>、<code>gigachat3</code>、<code>glm45/glm47</code>、<code>granite/granite-20b-fc/granite4</code>、<code>hermes</code>、<code>hunyuan_a13b</code>、<code>internlm</code>、<code>jamba</code>、<code>kimi_k2</code>、<code>llama3_json</code>、<code>llama4_json</code>、<code>llama4_pythonic</code>、<code>longcat</code>、<code>minimax/minimax_m2</code>、<code>mistral</code>、<code>olmo3</code>、<code>openai</code>、<code>phi4_mini_json</code>、<code>pythonic</code>、<code>qwen3_coder</code>、<code>qwen3_xml</code>、<code>seed_oss</code>、<code>step3/step3p5</code>、<code>xlam</code></td>
+</tr>
+<tr>
+<td><code>--tool-parser-plugin</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>自定义 tool call 解析器插件的路径</td>
+</tr>
+<tr>
+<td><code>--tool-server</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>工具服务器地址，用于远程工具执行</td>
+</tr>
+</tbody>
+</table>
+<h3 id="lora">LoRA 模块预加载<a class="headerlink" href="#lora" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--lora-modules</code></td>
+<td><code>list</code></td>
+<td><code>None</code></td>
+<td>服务启动时预加载的 LoRA 模块列表。格式：<code>name1=path1 name2=path2</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="_5">中间件<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--middleware</code></td>
+<td><code>list[str]</code></td>
+<td><code>[]</code></td>
+<td>额外的 ASGI 中间件（可多次使用），值为 Python 导入路径。如果是函数，通过 <code>@app.middleware('http')</code> 添加；如果是类，通过 <code>app.add_middleware()</code> 添加</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_6">日志与调试<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--disable-fastapi-docs</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>禁用 <code>/docs</code> (Swagger UI)、<code>/redoc</code>、<code>/openapi.json</code>。生产环境建议开启</td>
+</tr>
+<tr>
+<td><code>--enable-offline-docs</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>使用内置的静态资源提供离线文档（适用于无互联网的隔离环境）</td>
+</tr>
+<tr>
+<td><code>--disable-frontend-multiprocessing</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>禁用前端多进程模式</td>
+</tr>
+<tr>
+<td><code>--disable-access-log-for-endpoints</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>对特定端点禁用 uvicorn 访问日志。逗号分隔，减少高频端点（如 <code>/health</code>）的日志噪音。例：<code>"/health,/metrics,/ping"</code></td>
+</tr>
+<tr>
+<td><code>--disable-uvicorn-access-log</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>完全禁用 uvicorn 的 HTTP 访问日志</td>
+</tr>
+<tr>
+<td><code>--uvicorn-log-level</code></td>
+<td><code>str</code></td>
+<td><code>info</code></td>
+<td>uvicorn 日志级别：<code>critical</code> / <code>error</code> / <code>warning</code> / <code>info</code> / <code>debug</code> / <code>trace</code></td>
+</tr>
+<tr>
+<td><code>--log-config-file</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>Python logging 配置文件路径</td>
+</tr>
+<tr>
+<td><code>--log-error-stack</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>记录错误时附带完整堆栈信息</td>
+</tr>
+<tr>
+<td><code>--max-log-len</code></td>
+<td><code>int</code></td>
+<td><code>None</code></td>
+<td>每条日志的最大字符数，超过则截断</td>
+</tr>
+</tbody>
+</table>
+<h3 id="http">HTTP 协议限制<a class="headerlink" href="#http" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--h11-max-header-count</code></td>
+<td><code>int</code></td>
+<td><code>256</code></td>
+<td>单请求允许的最大 HTTP 头数量（h11 解析器）。防止 HTTP 头滥用攻击</td>
+</tr>
+<tr>
+<td><code>--h11-max-incomplete-event-size</code></td>
+<td><code>int</code></td>
+<td><code>4194304</code> (4MB)</td>
+<td>不完整 HTTP 事件（请求头或请求体）的最大字节数。防止慢速请求耗尽内存</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="modelconfig">ModelConfig — 模型配置<a class="headerlink" href="#modelconfig" title="Permanent link">&para;</a></h2>
+<p>控制模型的选择、加载方式、精度和行为。</p>
+<h3 id="_7">模型选择<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--model</code></td>
+<td><code>str</code></td>
+<td><code>Qwen/Qwen3-0.6B</code></td>
+<td>HuggingFace 模型 ID 或本地路径。Prometheus 指标中 <code>model_name</code> 标签的默认值</td>
+</tr>
+<tr>
+<td><code>--model-impl</code></td>
+<td><code>str</code></td>
+<td><code>auto</code></td>
+<td>模型实现来源：<code>auto</code>=优先 vLLM 实现→fallback Transformers；<code>vllm</code>=只用 vLLM；<code>transformers</code>=只用 Transformers（无优化）；<code>terratorch</code>=TerraTorch 实现</td>
+</tr>
+<tr>
+<td><code>--runner</code></td>
+<td><code>str</code></td>
+<td><code>auto</code></td>
+<td>Runner 类型：<code>auto</code>=自动检测；<code>generate</code>=文本生成；<code>draft</code>=投机解码的草案模型；<code>pooling</code>=嵌入/池化模型</td>
+</tr>
+<tr>
+<td><code>--convert</code></td>
+<td><code>str</code></td>
+<td><code>auto</code></td>
+<td>模型用途转换：<code>auto</code>=不转换；<code>classify</code>=转为分类；<code>embed</code>=转为嵌入；<code>none</code>=不转换</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_8">精度<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--dtype</code></td>
+<td><code>str</code></td>
+<td><code>auto</code></td>
+<td>模型权重和激活值的精度。<code>auto</code>=FP32/FP16 模型用 FP16，BF16 模型用 BF16；<code>half</code>/<code>float16</code>=FP16（AWQ 量化时推荐）；<code>bfloat16</code>=精度与范围的平衡（推荐）；<code>float</code>/<code>float32</code>=FP32（最耗显存）</td>
+</tr>
+<tr>
+<td><code>--override-attention-dtype</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>单独覆盖注意力计算的精度（与权重精度分开控制）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_9">上下文与长度<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--max-model-len</code></td>
+<td><code>int</code>/<code>str</code></td>
+<td>自动</td>
+<td><strong>模型上下文窗口</strong>（prompt + output 的 token 总数上限）。不设则自动从模型 config 读取（Qwen3-0.6B=40960）。支持缩写：<code>4k</code>=4000，<code>4K</code>=4096，<code>25.6k</code>=25600。设为 <code>-1</code> 或 <code>auto</code> = 自动选能装进 GPU 的最大值</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_10">量化<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--quantization / -q</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>权重量化方法。<code>None</code>=自动从模型 config 的 <code>quantization_config</code> 读取，没有则按 <code>dtype</code> 加载。支持的值取决于模型，常见：<code>awq</code>、<code>gptq</code>、<code>fp8</code>、<code>compressed-tensors</code>、<code>bitsandbytes</code></td>
+</tr>
+<tr>
+<td><code>--allow-deprecated-quantization</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>是否允许使用已弃用的量化方法</td>
+</tr>
+</tbody>
+</table>
+<h3 id="huggingface">HuggingFace 集成<a class="headerlink" href="#huggingface" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--hf-config-path</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>指定 HuggingFace config.json 的路径（通常不需要，与 model 路径不同时使用）</td>
+</tr>
+<tr>
+<td><code>--hf-overrides</code></td>
+<td><code>dict</code></td>
+<td><code>{}</code></td>
+<td>覆盖 HF config 中的字段。如 <code>{"num_hidden_layers": 20}</code></td>
+</tr>
+<tr>
+<td><code>--hf-token</code></td>
+<td><code>str</code>/<code>bool</code></td>
+<td><code>None</code></td>
+<td>HuggingFace API token。字符串直接作为 token；<code>True</code> = 用 <code>~/.cache/huggingface/token</code>（即 <code>hf auth login</code> 的结果）</td>
+</tr>
+<tr>
+<td><code>--revision</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>模型权重版本（分支名、tag 名、commit hash）</td>
+</tr>
+<tr>
+<td><code>--code-revision</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>模型代码版本（HuggingFace Hub 上的远程代码）</td>
+</tr>
+<tr>
+<td><code>--trust-remote-code</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>是否信任并执行 HuggingFace 仓库中的自定义代码。有些模型的 tokenizer 或配置需要此选项</td>
+</tr>
+<tr>
+<td><code>--config-format</code></td>
+<td><code>str</code></td>
+<td><code>auto</code></td>
+<td>配置文件格式：<code>auto</code>=先试 hf 再试 mistral；<code>hf</code>=HuggingFace 格式；<code>mistral</code>=Mistral 格式</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tokenizer">Tokenizer<a class="headerlink" href="#tokenizer" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--tokenizer</code></td>
+<td><code>str</code></td>
+<td>同 model</td>
+<td>Tokenizer 名称或路径（如果和模型路径不同）</td>
+</tr>
+<tr>
+<td><code>--tokenizer-mode</code></td>
+<td><code>str</code></td>
+<td><code>auto</code></td>
+<td>Tokenizer 模式：<code>auto</code>=Mistral 模型用 <code>mistral_common</code>，其他用 <code>hf</code>；<code>hf</code>=快速 tokenizer（推荐）；<code>slow</code>=Python 实现（更准确但更慢）；<code>mistral</code>=Mistral 专用；<code>deepseek_v32</code>=DeepSeek V3.2 专用</td>
+</tr>
+<tr>
+<td><code>--tokenizer-revision</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>Tokenizer 的版本号（分支/tag/commit）</td>
+</tr>
+<tr>
+<td><code>--skip-tokenizer-init</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>跳过 tokenizer 初始化。此时只接受 <code>prompt_token_ids</code> 输入，输出也只有 token ID</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_11">生成配置<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--generation-config</code></td>
+<td><code>str</code></td>
+<td><code>auto</code></td>
+<td>生成配置来源：<code>auto</code>=从模型路径加载 <code>generation_config.json</code>；<code>vllm</code>=不加载，用 vLLM 默认值；具体路径=从指定路径加载。<strong>如果 generation_config.json 里设了 <code>max_new_tokens</code>，则它是服务端的全局上限</strong></td>
+</tr>
+<tr>
+<td><code>--override-generation-config</code></td>
+<td><code>JSON</code></td>
+<td><code>{}</code></td>
+<td>覆盖或合并生成配置。如 <code>{"temperature": 0.5, "max_new_tokens": 1024}</code>。配合 <code>--generation-config auto</code> 时是合并；配合 <code>vllm</code> 时是替换</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_12">其他模型配置<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--seed</code></td>
+<td><code>int</code></td>
+<td><code>0</code></td>
+<td>全局随机种子。必须全局设置是因为张量并行时不同 worker 需要采样出相同的 token</td>
+</tr>
+<tr>
+<td><code>--enforce-eager</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td><code>True</code>=禁用 CUDA Graph 和 torch.compile，始终用 eager 模式执行。调试时有用但严重损失性能</td>
+</tr>
+<tr>
+<td><code>--enable-sleep-mode</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>启用引擎睡眠模式（仅 CUDA/HIP）。空闲时释放 GPU 显存，收到请求时重新加载。适合与其他进程共享 GPU 的场景</td>
+</tr>
+<tr>
+<td><code>--disable-cascade-attn</code></td>
+<td><code>bool</code></td>
+<td><code>True</code></td>
+<td>禁用级联注意力（cascade attention）。默认 <code>True</code>（即不启用），要使用需显式设为 <code>False</code>。不影响数学正确性，只是 heuristic 优化</td>
+</tr>
+<tr>
+<td><code>--disable-sliding-window</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>禁用滑动窗口注意力。即使模型支持（如 Mistral），也强制使用全局注意力</td>
+</tr>
+<tr>
+<td><code>--enable-prompt-embeds</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>允许通过 API 直接传入文本 embedding 替代 prompt 文本。有安全风险，仅受信用户使用。形状不正确会导致引擎崩溃</td>
+</tr>
+<tr>
+<td><code>--enable-return-routed-experts</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>返回 MoE 模型中每个 token 路由到了哪个 expert</td>
+</tr>
+<tr>
+<td><code>--served-model-name</code></td>
+<td><code>list[str]</code></td>
+<td>同 model</td>
+<td>在 API <code>/v1/models</code> 中暴露的模型名。可设多个（别名）。第一个名字作为 API 响应中的 <code>model</code> 字段和 Prometheus 指标的 <code>model_name</code> 标签</td>
+</tr>
+<tr>
+<td><code>--max-logprobs</code></td>
+<td><code>int</code></td>
+<td><code>20</code></td>
+<td>请求中指定 <code>logprobs</code> 时，最多返回多少个 token 的对数概率。设为 <code>-1</code> 则不设上限（可能 OOM）</td>
+</tr>
+<tr>
+<td><code>--logprobs-mode</code></td>
+<td><code>str</code></td>
+<td><code>raw_logprobs</code></td>
+<td>logprobs 返回的模式：<code>raw_logprobs</code> / <code>raw_logits</code> = 未应用处理器前的值；<code>processed_logprobs</code> / <code>processed_logits</code> = 应用 temperature/top_k/top_p 等处理器后的值</td>
+</tr>
+<tr>
+<td><code>--logits-processors</code></td>
+<td><code>list[str]</code></td>
+<td><code>None</code></td>
+<td>自定义 logits 处理器的完整类名列表</td>
+</tr>
+<tr>
+<td><code>--pooler-config</code></td>
+<td><code>JSON</code></td>
+<td><code>None</code></td>
+<td>Pooling 模型的 Pooler 配置，控制输出池化行为</td>
+</tr>
+<tr>
+<td><code>--io-processor-plugin</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>IO 处理器的插件名，模型启动时加载</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="loadconfig">LoadConfig — 权重加载配置<a class="headerlink" href="#loadconfig" title="Permanent link">&para;</a></h2>
+<p>控制模型权重文件的加载行为。</p>
+<h3 id="_13">加载格式<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--load-format</code></td>
+<td><code>str</code></td>
+<td><code>auto</code></td>
+<td>权重加载格式。详细选项：<br><code>auto</code>=先试 safetensors，失败则用 PyTorch bin<br><code>safetensors</code>=强制 safetensors 格式<br><code>pt</code>=强制 PyTorch <code>.bin</code> 格式<br><code>instanttensor</code>=CUDA 上的 safetensors 分布式加载，支持流水线预取和快速 Direct I/O<br><code>npcache</code>=PyTorch 格式 + 额外存 numpy 缓存加速后续加载<br><code>dummy</code>=随机初始化权重（仅用于代码分析和基准测试，不能推理）<br><code>tensorizer</code>=CoreWeave 的 tensorizer 库快速加载<br><code>runai_streamer</code>=Run:ai Model Streamer 加载<br><code>runai_streamer_sharded</code>=Run:ai Streamer 从预分片 checkpoint 加载<br><code>bitsandbytes</code>=使用 bitsandbytes 库加载量化权重<br><code>sharded_state</code>=从预分片 checkpoint 加载（加速 TP 模型冷启动）<br><code>gguf</code>=加载 GGUF 格式文件（llama.cpp 生态）<br><code>mistral</code>=Mistral 专用的合并 safetensors 格式</td>
+</tr>
+<tr>
+<td><code>--download-dir</code></td>
+<td><code>str</code></td>
+<td>HF 默认缓存</td>
+<td>模型权重下载目录。不设则用 HuggingFace 默认缓存路径</td>
+</tr>
+<tr>
+<td><code>--ignore-patterns</code></td>
+<td><code>list[str]</code></td>
+<td><code>['original/**/*']</code></td>
+<td>加载时忽略的文件模式（glob）。默认忽略 <code>original/</code> 目录避免重复加载 LLaMA 的原始权重</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_14">加载优化<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--safetensors-load-strategy</code></td>
+<td><code>str</code></td>
+<td><code>lazy</code></td>
+<td>safetensors 加载策略：<br><code>lazy</code>（默认）=内存映射，按需加载。本地磁盘最优<br><code>eager</code>=预先读入 CPU 内存。网络文件系统（Lustre/NFS）推荐，避免随机读延迟，但吃更多 CPU RAM<br><code>prefetch</code>=预先读入 OS 页面缓存再加载。适合网络或高延迟存储<br><code>torchao</code>=预先读入后重建为 torchao 张量子类（torchao 量化 checkpoint 专用，需 torchao ≥0.14.0）</td>
+</tr>
+<tr>
+<td><code>--use-tqdm-on-load</code></td>
+<td><code>bool</code></td>
+<td><code>True</code></td>
+<td>加载权重时显示进度条</td>
+</tr>
+<tr>
+<td><code>--pt-load-map-location</code></td>
+<td><code>str</code>/<code>dict</code></td>
+<td><code>cpu</code></td>
+<td>PyTorch checkpoint 加载时的 <code>map_location</code> 参数。不支持 safetensors。例：<code>{"": "cuda"}</code> 直接加载到 GPU；<code>{"cuda:1": "cuda:0"}</code> 重映射设备。命令行使用时字典内字符串需双引号</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_15">高级<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--model-loader-extra-config</code></td>
+<td><code>dict</code></td>
+<td><code>{}</code></td>
+<td>传递给对应 <code>load_format</code> 的模型加载器的额外配置</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="attentionconfig">AttentionConfig — 注意力配置<a class="headerlink" href="#attentionconfig" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--attention-backend</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>注意力后端。<code>None</code>=自动选择。可选值取决于编译进来的后端，通常包括 <code>FLASH_ATTN</code>（默认）、<code>FLASHINFER</code>、<code>TRITON_ATTN</code>、<code>FLEX_ATTENTION</code></td>
+</tr>
+</tbody>
+</table>
+<p>通过 <code>--attention-config / -ac</code> 可以传入更详细的 JSON 配置：
+<div class="language-bash highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Bash</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-1">-ac<span class="w"> </span><span class="s1">&#39;{&quot;backend&quot;: &quot;FLASH_ATTN&quot;, &quot;flash_attn_version&quot;: 2, &quot;use_prefill_decode_attention&quot;: false}&#39;</span>
+</span></code></pre></div></td></tr></table></div></p>
+<p>AttentionConfig 完整字段（默认值）：
+| 字段 | 默认值 | 说明 |
+|---|---|---|
+| <code>backend</code> | <code>None</code> | 注意力后端 |
+| <code>flash_attn_version</code> | <code>None</code> | Flash Attention 版本 |
+| <code>use_prefill_decode_attention</code> | <code>False</code> | prefill 和 decode 是否使用统一注意力 |
+| <code>flash_attn_max_num_splits_for_cuda_graph</code> | <code>32</code> | FA CUDA 图的最大 splits 数 |
+| <code>use_cudnn_prefill</code> | <code>False</code> | 是否使用 cuDNN 进行 prefill |
+| <code>use_trtllm_ragged_deepseek_prefill</code> | <code>False</code> | DeepSeek ragged prefill 专用 |
+| <code>use_trtllm_attention</code> | <code>None</code> | TRT-LLM 注意力 |
+| <code>disable_flashinfer_prefill</code> | <code>True</code> | 禁用 FlashInfer prefill |
+| <code>disable_flashinfer_q_quantization</code> | <code>False</code> | 禁用 FlashInfer 的 Q 量化 |
+| <code>use_prefill_query_quantization</code> | <code>False</code> | prefill 阶段量化 Q |</p>
+<hr />
+<h2 id="structuredoutputsconfig">StructuredOutputsConfig — 结构化输出<a class="headerlink" href="#structuredoutputsconfig" title="Permanent link">&para;</a></h2>
+<p>控制推理内容解析（<code>&lt;think&gt;...&lt;/think&gt;</code> 标记的拆分）和结构化输出（guided decoding）。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--reasoning-parser</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>推理内容解析器。如 <code>deepseek_r1</code>。用于拆分 <code>&lt;think&gt;推理过程&lt;/think&gt;最终答案</code>，使 API 返回中 <code>reasoning_content</code> 和 <code>content</code> 分开</td>
+</tr>
+<tr>
+<td><code>--reasoning-parser-plugin</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>自定义推理解析器插件的路径，可动态加载注册</td>
+</tr>
+</tbody>
+</table>
+<p>完整的结构化输出配置通过 <code>--structured-outputs-config</code> JSON：
+<div class="language-bash highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Bash</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-1-1">--structured-outputs-config<span class="w"> </span><span class="s1">&#39;{</span>
+</span><span id="__span-1-2"><span class="s1">  &quot;backend&quot;: &quot;auto&quot;,</span>
+</span><span id="__span-1-3"><span class="s1">  &quot;disable_any_whitespace&quot;: false,</span>
+</span><span id="__span-1-4"><span class="s1">  &quot;disable_additional_properties&quot;: false,</span>
+</span><span id="__span-1-5"><span class="s1">  &quot;reasoning_parser&quot;: &quot;deepseek_r1&quot;,</span>
+</span><span id="__span-1-6"><span class="s1">  &quot;enable_in_reasoning&quot;: false</span>
+</span><span id="__span-1-7"><span class="s1">}&#39;</span>
+</span></code></pre></div></td></tr></table></div></p>
+<hr />
+<h2 id="parallelconfig">ParallelConfig — 并行配置<a class="headerlink" href="#parallelconfig" title="Permanent link">&para;</a></h2>
+<p>控制分布式推理的 GPU 分配策略。vLLM 支持 <strong>五种并行维度</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>并行方式</th>
+<th>参数</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>张量并行 (TP)</strong></td>
+<td><code>--tensor-parallel-size / -tp</code></td>
+<td><code>1</code></td>
+<td>每个 Transformer 层的权重分散到多 GPU</td>
+</tr>
+<tr>
+<td><strong>流水线并行 (PP)</strong></td>
+<td><code>--pipeline-parallel-size / -pp</code></td>
+<td><code>1</code></td>
+<td>不同层放到不同 GPU，按流水线执行</td>
+</tr>
+<tr>
+<td><strong>数据并行 (DP)</strong></td>
+<td><code>--data-parallel-size / -dp</code></td>
+<td><code>1</code></td>
+<td>多份模型副本，不同请求分到不同副本</td>
+</tr>
+<tr>
+<td><strong>上下文并行 (CP)</strong></td>
+<td><code>--decode-context-parallel-size / -dcp</code></td>
+<td><code>1</code></td>
+<td>长序列分散到多 GPU 并行计算注意力</td>
+</tr>
+<tr>
+<td><strong>专家并行 (EP)</strong></td>
+<td><code>--enable-expert-parallel / -ep</code></td>
+<td><code>False</code></td>
+<td>MoE 的 expert 权重分散到多 GPU</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tp">张量并行 (TP)<a class="headerlink" href="#tp" title="Permanent link">&para;</a></h3>
+<p>将每层权重按列/行切分到多个 GPU，<strong>减少单 GPU 显存占用，加速单请求</strong>。</p>
+<div class="language-bash highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Bash</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-2-1">--tensor-parallel-size<span class="w"> </span><span class="m">2</span><span class="w">      </span><span class="c1"># 2 卡跑一个 7B 模型</span>
+</span><span id="__span-2-2">--tensor-parallel-size<span class="w"> </span><span class="m">4</span><span class="w">      </span><span class="c1"># 4 卡跑一个 70B 模型</span>
+</span></code></pre></div></td></tr></table></div>
+<h3 id="dp">数据并行 (DP)<a class="headerlink" href="#dp" title="Permanent link">&para;</a></h3>
+<p>多份完整模型副本，<strong>提高吞吐量</strong>。Erlang 对 MoE 权重进行 DP 分片。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--data-parallel-size / -dp</code></td>
+<td><code>int</code></td>
+<td><code>1</code></td>
+<td>DP 组数。MoE 层的 expert 会按 <code>tp_size × dp_size</code> 分片</td>
+</tr>
+<tr>
+<td><code>--data-parallel-size-local / -dpl</code></td>
+<td><code>int</code></td>
+<td><code>None</code></td>
+<td>本节点上的 DP 副本数</td>
+</tr>
+<tr>
+<td><code>--data-parallel-rank / -dpn</code></td>
+<td><code>int</code></td>
+<td><code>None</code></td>
+<td>本实例的 DP rank。设置后启用外部负载均衡模式</td>
+</tr>
+<tr>
+<td><code>--data-parallel-start-rank / -dpr</code></td>
+<td><code>int</code></td>
+<td><code>None</code></td>
+<td>从节点的起始 DP rank</td>
+</tr>
+<tr>
+<td><code>--data-parallel-backend / -dpb</code></td>
+<td><code>str</code></td>
+<td><code>mp</code></td>
+<td>DP 后端：<code>mp</code>（multiprocessing，单机推荐）、<code>ray</code>（多机）</td>
+</tr>
+<tr>
+<td><code>--data-parallel-address / -dpa</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>DP 集群头节点地址</td>
+</tr>
+<tr>
+<td><code>--data-parallel-rpc-port / -dpp</code></td>
+<td><code>int</code></td>
+<td><code>None</code></td>
+<td>DP RPC 通信端口</td>
+</tr>
+<tr>
+<td><code>--data-parallel-external-lb / -dpe</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>外部负载均衡模式（Kubernetes "one-pod-per-rank" 架构）</td>
+</tr>
+<tr>
+<td><code>--data-parallel-hybrid-lb / -dph</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>混合 LB 模式：vLLM 内部负载均衡到本地 DP ranks，外部 LB 跨节点</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cp">上下文并行 (CP)<a class="headerlink" href="#cp" title="Permanent link">&para;</a></h3>
+<p>将单个长序列的 KV Cache 切分到多 GPU，<strong>处理超长上下文</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--decode-context-parallel-size / -dcp</code></td>
+<td><code>int</code></td>
+<td><code>1</code></td>
+<td>Decode 阶段上下文并行组数。复用 TP 的 GPU，<code>tp_size</code> 必须能被 <code>dcp_size</code> 整除</td>
+</tr>
+<tr>
+<td><code>--prefill-context-parallel-size / -pcp</code></td>
+<td><code>int</code></td>
+<td><code>1</code></td>
+<td>Prefill 阶段上下文并行组数</td>
+</tr>
+<tr>
+<td><code>--dcp-comm-backend</code></td>
+<td><code>str</code></td>
+<td><code>ag_rs</code></td>
+<td>DCP 通信后端：<code>ag_rs</code>=AllGather+ReduceScatter（默认，每层 3 次 NCCL 调用）；<code>a2a</code>=All-to-All 交换局部输出 + Triton 融合（MLA 模型每层从 3 次降到 2 次）</td>
+</tr>
+<tr>
+<td><code>--cp-kv-cache-interleave-size</code></td>
+<td><code>int</code></td>
+<td><code>1</code></td>
+<td>KV cache 在 CP ranks 间的交织粒度。<code>1</code>=token 级交织；<code>block_size</code>=块级交织。需被 block_size 整除，且 ≤ block_size</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ep">专家并行 (EP)<a class="headerlink" href="#ep" title="Permanent link">&para;</a></h3>
+<p>专门优化 MoE 模型的 expert 权重分布。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--enable-expert-parallel / -ep</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>开启专家并行。MoE 层用 EP 替代 TP，非 MoE 层仍用 TP</td>
+</tr>
+<tr>
+<td><code>--expert-placement-strategy</code></td>
+<td><code>str</code></td>
+<td><code>linear</code></td>
+<td>Expert 放置策略：<code>linear</code>=连续分配（如 rank0=[0,1], rank1=[2,3]）；<code>round_robin</code>=轮转分配（如 rank0=[0,2], rank1=[1,3]）。轮转对 grouped expert 模型的负载均衡更好</td>
+</tr>
+<tr>
+<td><code>--enable-elastic-ep</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>弹性 EP，允许运行时动态调整 expert 分布</td>
+</tr>
+<tr>
+<td><code>--enable-eplb</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>专家并行负载均衡，监控并重平衡各 rank 的 expert 负载</td>
+</tr>
+<tr>
+<td><code>--eplb-config</code></td>
+<td><code>JSON</code></td>
+<td>见下方</td>
+<td>EP 负载均衡的详细配置</td>
+</tr>
+<tr>
+<td><code>--enable-ep-weight-filter</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>每个 rank 只从磁盘加载本地的 expert 分片，显著减少大 MoE（DeepSeek/Mixtral/Kimi-K2）的存储 I/O</td>
+</tr>
+<tr>
+<td><code>--all2all-backend</code></td>
+<td><code>str</code></td>
+<td><code>allgather_reducescatter</code></td>
+<td>EP all2all 通信后端。选项：<code>naive</code>（广播）、<code>allgather_reducescatter</code>（默认）、<code>deepep_high_throughput</code>（高吞吐）、<code>deepep_low_latency</code>（低延迟）、<code>mori</code>、<code>nixl_ep</code>、<code>flashinfer_nvlink_two_sided</code>（NVLink）、<code>flashinfer_nvlink_one_sided</code>、<code>pplx</code></td>
+</tr>
+</tbody>
+</table>
+<p>EPLB 默认配置：
+<div class="language-json highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">JSON</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-3-1"><span class="p">{</span>
+</span><span id="__span-3-2"><span class="w">  </span><span class="nt">&quot;window_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">,</span>
+</span><span id="__span-3-3"><span class="w">  </span><span class="nt">&quot;step_interval&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3000</span><span class="p">,</span>
+</span><span id="__span-3-4"><span class="w">  </span><span class="nt">&quot;num_redundant_experts&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-3-5"><span class="w">  </span><span class="nt">&quot;log_balancedness&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+</span><span id="__span-3-6"><span class="w">  </span><span class="nt">&quot;log_balancedness_interval&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-3-7"><span class="w">  </span><span class="nt">&quot;use_async&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+</span><span id="__span-3-8"><span class="w">  </span><span class="nt">&quot;policy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default&quot;</span>
+</span><span id="__span-3-9"><span class="p">}</span>
+</span></code></pre></div></td></tr></table></div></p>
+<h3 id="dbo-dual-batch-overlap">DBO (Dual Batch Overlap)<a class="headerlink" href="#dbo-dual-batch-overlap" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--enable-dbo</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>启用双批次重叠执行。将一个批次拆成两个微批次流水线化，隐藏通信延迟</td>
+</tr>
+<tr>
+<td><code>--dbo-decode-token-threshold</code></td>
+<td><code>int</code></td>
+<td><code>32</code></td>
+<td>纯 decode 批次的 DBO 微批次阈值。大于此 token 数才用微批次</td>
+</tr>
+<tr>
+<td><code>--dbo-prefill-token-threshold</code></td>
+<td><code>int</code></td>
+<td><code>512</code></td>
+<td>包含 prefill 批次的 DBO 微批次阈值</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_16">多节点<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--nnodes / -n</code></td>
+<td><code>int</code></td>
+<td><code>1</code></td>
+<td>总节点数（多机推理）</td>
+</tr>
+<tr>
+<td><code>--node-rank / -r</code></td>
+<td><code>int</code></td>
+<td><code>0</code></td>
+<td>本节点的 rank（0 起始）</td>
+</tr>
+<tr>
+<td><code>--master-addr</code></td>
+<td><code>str</code></td>
+<td><code>127.0.0.1</code></td>
+<td>分布式通信的 master 地址</td>
+</tr>
+<tr>
+<td><code>--master-port</code></td>
+<td><code>int</code></td>
+<td><code>29501</code></td>
+<td>分布式通信的 master 端口</td>
+</tr>
+<tr>
+<td><code>--distributed-timeout-seconds</code></td>
+<td><code>int</code></td>
+<td><code>None</code></td>
+<td>分布式操作超时（秒）。默认用 PyTorch NCCL 的默认值（600s）。多节点下载模型慢时可加大</td>
+</tr>
+<tr>
+<td><code>--distributed-executor-backend</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>分布式执行后端：<code>mp</code>=multiprocessing（单机，tp×pp≤GPU 数时默认）；<code>ray</code>=Ray（多机或 TPU 必须）；<code>uni</code>=单进程；<code>external_launcher</code>=外部启动器</td>
+</tr>
+<tr>
+<td><code>--disable-custom-all-reduce</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>禁用 vLLM 的优化 all-reduce kernel，回退到 NCCL</td>
+</tr>
+<tr>
+<td><code>--disable-nccl-for-dp-synchronization</code></td>
+<td><code>bool</code></td>
+<td><code>None</code></td>
+<td>DP 同步时用 Gloo 替代 NCCL</td>
+</tr>
+<tr>
+<td><code>--max-parallel-loading-workers</code></td>
+<td><code>int</code></td>
+<td><code>None</code></td>
+<td>模型分多批次加载时的最大并行 worker 数。防止 TP 加载大模型时 CPU RAM OOM</td>
+</tr>
+<tr>
+<td><code>--worker-cls</code></td>
+<td><code>str</code></td>
+<td><code>auto</code></td>
+<td>Worker 类的完整路径。<code>auto</code>=根据平台自动选择。自定义 worker 类注入新行为</td>
+</tr>
+<tr>
+<td><code>--worker-extension-cls</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>Worker 扩展类。通过动态继承注入新属性和方法到 worker 类，供 <code>collective_rpc</code> 调用使用</td>
+</tr>
+<tr>
+<td><code>--ubatch-size</code></td>
+<td><code>int</code></td>
+<td><code>0</code></td>
+<td>微批次大小（实验性）</td>
+</tr>
+<tr>
+<td><code>--ray-workers-use-nsight</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>是否用 Nsight 分析 Ray worker</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="cacheconfig-kv-cache">CacheConfig — KV Cache 配置<a class="headerlink" href="#cacheconfig-kv-cache" title="Permanent link">&para;</a></h2>
+<p>控制 PagedAttention 的关键——KV Cache 的内存分配和行为。直接影响 <strong>显存占用</strong> 和 <strong>最大并发数</strong>。</p>
+<h3 id="_17">内存控制<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--gpu-memory-utilization</code></td>
+<td><code>float</code></td>
+<td><code>0.9</code></td>
+<td><strong>最重要的内存参数</strong>。KV Cache 可用 GPU 显存的比例（0~1）。<code>0.5</code>=50%。这是<strong>每个实例的限制</strong>，不影响同 GPU 上的其他 vLLM 实例</td>
+</tr>
+<tr>
+<td><code>--kv-cache-memory-bytes</code></td>
+<td><code>int</code>/<code>str</code></td>
+<td><code>None</code></td>
+<td>每个 GPU 的 KV Cache 精确大小（字节），支持 <code>1k</code>/<code>1M</code> 等缩写。<strong>设了这个后 <code>gpu_memory_utilization</code> 会被忽略</strong>。用于需要精确控制内存的场景</td>
+</tr>
+<tr>
+<td><code>--block-size</code></td>
+<td><code>int</code></td>
+<td><code>None</code>（自动）</td>
+<td>PagedAttention 的块大小（token 数）。越大 → 管理开销越小但碎片越多。不设则由 vLLM 自动选择（通常 16 或 256）</td>
+</tr>
+<tr>
+<td><code>--num-gpu-blocks-override</code></td>
+<td><code>int</code></td>
+<td><code>None</code></td>
+<td>强制指定 GPU block 数量（用于测试抢占行为）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_18">数据类型<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--kv-cache-dtype</code></td>
+<td><code>str</code></td>
+<td><code>auto</code></td>
+<td>KV Cache 存储精度。<code>auto</code>=跟随模型精度；<code>fp8</code>/<code>fp8_e4m3</code>（CUDA 11.8+）；<code>fp8_e5m2</code>；<code>fp8_inc</code>（Intel Gaudi）；<code>bfloat16</code>；<code>float16</code>。FP8 可将 KV Cache 内存减半，轻微损失精度。DeepSeekV3.2 等模型默认 FP8</td>
+</tr>
+<tr>
+<td><code>--calculate-kv-scales</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>KV Cache dtype 为 FP8 时，是否在运行时动态计算缩放因子。<code>False</code>=从 checkpoint 加载（若存在），否则 scale=1.0</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_19">前缀缓存<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--enable-prefix-caching</code></td>
+<td><code>bool</code></td>
+<td><code>None</code></td>
+<td>是否启用前缀缓存。相同前缀的请求（如共享 system prompt）复用 KV Cache，大幅减少 prefill 时间。vLLM 实现比 nano-vllm 的 xxhash 方案更复杂，支持全自动的 APC（Automatic Prefix Caching）</td>
+</tr>
+<tr>
+<td><code>--prefix-caching-hash-algo</code></td>
+<td><code>str</code></td>
+<td><code>sha256</code></td>
+<td>前缀缓存哈希算法。选项：<br><code>sha256</code>（默认）=Pickle 序列化 + SHA-256，最安全避免哈希碰撞<br><code>sha256_cbor</code>=CBOR 序列化 + SHA-256，跨语言可复现<br><code>xxhash</code>=Pickle + xxHash (128-bit)，更快但有碰撞风险（多租户环境有安全隐患）<br><code>xxhash_cbor</code>=CBOR + xxHash，可复现</td>
+</tr>
+</tbody>
+</table>
+<h3 id="kv-cache-cpu">KV Cache CPU 卸载<a class="headerlink" href="#kv-cache-cpu" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--kv-offloading-size</code></td>
+<td><code>float</code></td>
+<td><code>None</code></td>
+<td>KV Cache CPU 卸载大小（GiB）。TP&gt;1 时是所有 TP rank 的总和。设置后启用 KV Cache CPU 卸载，用 CPU 内存扩展 KV Cache 容量（以速度为代价）</td>
+</tr>
+<tr>
+<td><code>--kv-offloading-backend</code></td>
+<td><code>str</code></td>
+<td><code>native</code></td>
+<td>KV Cache 卸载后端：<code>native</code>（vLLM 原生 CPU 卸载）、<code>lmcache</code>（LMCache）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mamba">Mamba 缓存<a class="headerlink" href="#mamba" title="Permanent link">&para;</a></h3>
+<p>Mamba（状态空间模型）有自己的缓存格式，不同于 Transformer 的 KV Cache。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--mamba-block-size</code></td>
+<td><code>int</code></td>
+<td><code>None</code></td>
+<td>Mamba 缓存块大小（token 数）。需为 8 的倍数（对齐 causal_conv1d kernel）。仅当前缀缓存开启时可设置</td>
+</tr>
+<tr>
+<td><code>--mamba-cache-dtype</code></td>
+<td><code>str</code></td>
+<td><code>auto</code></td>
+<td>Mamba 缓存精度（卷积状态 + SSM 状态）：<code>auto</code>/<code>float16</code>/<code>float32</code></td>
+</tr>
+<tr>
+<td><code>--mamba-ssm-cache-dtype</code></td>
+<td><code>str</code></td>
+<td><code>auto</code></td>
+<td>仅 SSM 状态的精度（卷积状态仍用 <code>mamba_cache_dtype</code>）</td>
+</tr>
+<tr>
+<td><code>--mamba-cache-mode</code></td>
+<td><code>str</code></td>
+<td><code>none</code></td>
+<td>Mamba 缓存策略：<code>none</code>=无前缀缓存时；<code>all</code>=在每 <code>i × block_size</code> 位置缓存全部状态；<code>align</code>=仅在每步调度末尾 + <code>i × block_size</code> 位置缓存</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_20">实验性<a class="headerlink" href="#_20" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--kv-sharing-fast-prefill</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>实验性。KV 共享优化 prefill（YOCO 等架构）。当前版本设置此 flag 并无实际效果</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="offloadconfig">OffloadConfig — 权重卸载<a class="headerlink" href="#offloadconfig" title="Permanent link">&para;</a></h2>
+<p>当 GPU 显存不够装模型权重时，将部分权重移到 CPU 内存。<strong>用 CPU RAM + 带宽换取显存</strong>。</p>
+<h3 id="uva-unified-virtual-addressing">UVA (Unified Virtual Addressing) 零拷贝卸载<a class="headerlink" href="#uva-unified-virtual-addressing" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--cpu-offload-gb</code></td>
+<td><code>float</code></td>
+<td><code>0</code></td>
+<td>每个 GPU 卸载到 CPU 的大小（GiB）。设为 10 → 24GB GPU 虚拟成 34GB（可加载 13B BF16 模型=~26GB）。利用 UVA 做到零拷贝传输。需快速 CPU-GPU 互联（PCIe 4.0+）</td>
+</tr>
+<tr>
+<td><code>--cpu-offload-params</code></td>
+<td><code>set[str]</code></td>
+<td><code>set()</code></td>
+<td>指定哪些参数名段卸载（按名称的 "." segment 匹配）。为空=自动选择参数直到达到 <code>cpu_offload_gb</code> 的显存限制。例：<code>"experts"</code> 匹配 <code>mlp.experts.w2_weight</code>；<code>"experts.w2_weight"</code> 精确匹配；<code>"expert"</code> / <code>"w2"</code> 无法匹配（必须是完整 segment）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="prefetch">Prefetch 卸载<a class="headerlink" href="#prefetch" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--offload-group-size</code></td>
+<td><code>int</code></td>
+<td><code>0</code></td>
+<td>将每 N 层分为一组。每组中最后 <code>offload_num_in_group</code> 层卸载。例：<code>group_size=8, num_in_group=2</code> → 卸载第 6,7,14,15,22,23... 层</td>
+</tr>
+<tr>
+<td><code>--offload-num-in-group</code></td>
+<td><code>int</code></td>
+<td><code>1</code></td>
+<td>每组卸载的层数，需 ≤ <code>offload_group_size</code></td>
+</tr>
+<tr>
+<td><code>--offload-params</code></td>
+<td><code>set[str]</code></td>
+<td><code>set()</code></td>
+<td>指定预取卸载的参数名段。为空=卸载被选中层的全部参数。使用 segment 匹配：<code>"w13_weight"</code> 匹配 <code>mlp.experts.w13_weight</code> 但不匹配 <code>mlp.experts.w13_weight_scale</code></td>
+</tr>
+<tr>
+<td><code>--offload-prefetch-step</code></td>
+<td><code>int</code></td>
+<td><code>1</code></td>
+<td>预取提前步数。越大越能隐藏传输延迟，但占更多 GPU 内存</td>
+</tr>
+<tr>
+<td><code>--offload-backend</code></td>
+<td><code>str</code></td>
+<td><code>auto</code></td>
+<td>卸载后端：<code>auto</code>=有 <code>offload_group_size</code> 时用 <code>prefetch</code>，有 <code>cpu_offload_gb</code> 时用 <code>uva</code>；<code>uva</code>=UVA 零拷贝；<code>prefetch</code>=异步预取</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="multimodalconfig">MultiModalConfig — 多模态<a class="headerlink" href="#multimodalconfig" title="Permanent link">&para;</a></h2>
+<p>控制视觉/音频等多模态模型的输入处理。</p>
+<h3 id="_21">输入控制<a class="headerlink" href="#_21" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--limit-mm-per-prompt</code></td>
+<td><code>JSON</code></td>
+<td><code>{}</code></td>
+<td>每种模态每个 prompt 最大输入数。默认为 999。格式：<br>旧版（仅数量）：<code>{"image": 16, "video": 2}</code><br>新版（含选项）：<code>{"video": {"count": 1, "num_frames": 32, "width": 512, "height": 512}}</code><br>混用：<code>{"image": 16, "video": {"count": 1, "num_frames": 32}}</code></td>
+</tr>
+<tr>
+<td><code>--language-model-only</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>禁用所有多模态输入（所有模态 limit = 0）。等价于把所有模态的 limit 设为 0</td>
+</tr>
+<tr>
+<td><code>--enable-mm-embeds</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>允许直接传入多模态 embedding。有安全风险，仅受信用户。与 <code>limit-mm-per-prompt=0</code> 配合可跳过编码器加载，只接受预计算的 embedding</td>
+</tr>
+<tr>
+<td><code>--interleave-mm-strings</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>启用图片和文本完全交错的多模态 prompt（需 <code>--chat-template-content-format=string</code>）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_22">编码器<a class="headerlink" href="#_22" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--mm-encoder-attn-backend</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>覆盖多模态编码器（视觉 Transformer）的注意力后端，如 <code>FLASH_ATTN</code></td>
+</tr>
+<tr>
+<td><code>--mm-encoder-only</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>仅运行多模态编码器，跳过语言模型。通常只用于分离式 encoder 进程</td>
+</tr>
+<tr>
+<td><code>--mm-encoder-tp-mode</code></td>
+<td><code>str</code></td>
+<td><code>weights</code></td>
+<td>编码器 TP 模式：<code>weights</code>=权重切分（默认）；<code>data</code>=数据切分（每 rank 有完整权重，并行处理不同输入）。仅部分模型支持</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_23">缓存与处理<a class="headerlink" href="#_23" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--mm-processor-cache-gb</code></td>
+<td><code>float</code></td>
+<td><code>4</code></td>
+<td>多模态处理器缓存大小（GiB）。避免对相同的多模态输入重复处理。总内存消耗 = <code>cache_size × (api_server_count + data_parallel_size)</code>。设为 <code>0</code> 禁用</td>
+</tr>
+<tr>
+<td><code>--mm-processor-cache-type</code></td>
+<td><code>str</code></td>
+<td><code>lru</code></td>
+<td>缓存类型：<code>lru</code>=镜像 LRU 缓存；<code>shm</code>=共享内存 FIFO 缓存（跨进程共享）</td>
+</tr>
+<tr>
+<td><code>--mm-shm-cache-max-object-size-mb</code></td>
+<td><code>int</code></td>
+<td><code>128</code></td>
+<td>SHM 缓存中单个对象最大 MB（仅 <code>shm</code> 模式有效）</td>
+</tr>
+<tr>
+<td><code>--mm-processor-kwargs</code></td>
+<td><code>JSON</code></td>
+<td><code>None</code></td>
+<td>传递给 <code>AutoProcessor.from_pretrained</code> 的覆盖参数。根据模型而异。如 Phi-3-Vision：<code>{"num_crops": 4}</code></td>
+</tr>
+<tr>
+<td><code>--media-io-kwargs</code></td>
+<td><code>JSON</code></td>
+<td><code>{}</code></td>
+<td>媒体 IO 处理的额外参数，按模态分别配置。例：<code>{"video": {"num_frames": 40}}</code></td>
+</tr>
+<tr>
+<td><code>--skip-mm-profiling</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>跳过多模态内存分析，加速启动。但用户需自行估算编码器激活值的内存需求</td>
+</tr>
+<tr>
+<td><code>--video-pruning-rate</code></td>
+<td><code>float</code></td>
+<td><code>None</code></td>
+<td>视频 Token 裁剪率 [0, 1)，决定每帧视频保留多少 token</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_24">安全<a class="headerlink" href="#_24" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--allowed-local-media-path</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>允许 API 请求读取本地图片/视频的目录路径。有安全风险，仅受信环境使用</td>
+</tr>
+<tr>
+<td><code>--allowed-media-domains</code></td>
+<td><code>list[str]</code></td>
+<td><code>None</code></td>
+<td>允许的多模态输入 URL 域名白名单。不设则不限制</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="loraconfig-lora">LoRAConfig — LoRA 适配器<a class="headerlink" href="#loraconfig-lora" title="Permanent link">&para;</a></h2>
+<p>LoRA 允许基础模型在<strong>运行时不修改权重</strong>的情况下适配不同任务。多个 LoRA 可同时在内存中，按请求切换。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--enable-lora</code></td>
+<td><code>bool</code></td>
+<td><code>None</code></td>
+<td>启用 LoRA 适配器支持。设为 <code>True</code> 后可通过 API 请求头指定使用哪个 LoRA</td>
+</tr>
+<tr>
+<td><code>--max-loras</code></td>
+<td><code>int</code></td>
+<td><code>1</code></td>
+<td>单个批次中可同时使用的最大 LoRA 数量（不同请求可用不同 LoRA）</td>
+</tr>
+<tr>
+<td><code>--max-lora-rank</code></td>
+<td><code>int</code></td>
+<td><code>16</code></td>
+<td>最大 LoRA rank。可选值：<code>1</code>/<code>8</code>/<code>16</code>/<code>32</code>/<code>64</code>/<code>128</code>/<code>256</code>/<code>320</code>/<code>512</code></td>
+</tr>
+<tr>
+<td><code>--max-cpu-loras</code></td>
+<td><code>int</code></td>
+<td><code>None</code></td>
+<td>CPU 内存中可缓存的最大 LoRA 数量。需 ≥ <code>max_loras</code>。LRU 淘汰，存不下的从磁盘懒加载</td>
+</tr>
+<tr>
+<td><code>--lora-dtype</code></td>
+<td><code>str</code></td>
+<td><code>auto</code></td>
+<td>LoRA 权重的精度：<code>auto</code>（跟随基础模型）、<code>float16</code>、<code>bfloat16</code></td>
+</tr>
+<tr>
+<td><code>--fully-sharded-loras</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>完全分片 LoRA 计算（默认仅一半分片）。在高序列长度、高 rank 或大 TP 时可能更快</td>
+</tr>
+<tr>
+<td><code>--specialize-active-lora</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>根据活跃 LoRA 数量特化 CUDA 图。会为不同的活跃 LoRA 数量（2 的幂次，最多 <code>max_loras</code>）捕获各自的 CUDA 图。提高变 LoRA 数场景的性能，但增加启动时间和显存</td>
+</tr>
+<tr>
+<td><code>--enable-tower-connector-lora</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>多模态模型（如 Qwen VL）的视觉 tower 和 connector 也接受 LoRA。实验性功能</td>
+</tr>
+<tr>
+<td><code>--default-mm-loras</code></td>
+<td><code>JSON</code></td>
+<td><code>None</code></td>
+<td>多模态模型特定模态的默认 LoRA 映射。如 <code>{"image": "/path/to/image_lora"}</code>。同一请求的多个模态各有 LoRA 时只生效一个</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="observabilityconfig">ObservabilityConfig — 可观测性<a class="headerlink" href="#observabilityconfig" title="Permanent link">&para;</a></h2>
+<p>监控和调试。</p>
+<h3 id="_25">指标<a class="headerlink" href="#_25" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--otlp-traces-endpoint</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>OpenTelemetry traces 上报的目标 URL（用于 Jaeger/Zipkin 等）</td>
+</tr>
+<tr>
+<td><code>--collect-detailed-traces</code></td>
+<td><code>list[str]</code></td>
+<td><code>None</code></td>
+<td>开启详细 trace 的模块：<code>all</code> / <code>model</code> / <code>worker</code>。可能有性能影响</td>
+</tr>
+<tr>
+<td><code>--kv-cache-metrics</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>启用 KV Cache 指标（块生命周期、空闲时间、复用间隔）。采样统计，开销低</td>
+</tr>
+<tr>
+<td><code>--kv-cache-metrics-sample</code></td>
+<td><code>float</code></td>
+<td><code>0.01</code></td>
+<td>KV Cache 指标采样率（0.0, 1.0]。默认 1%</td>
+</tr>
+<tr>
+<td><code>--cudagraph-metrics</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>启用 CUDA 图指标（pad/unpad token 数、dispatch 模式频率）</td>
+</tr>
+<tr>
+<td><code>--enable-mfu-metrics</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>启用 MFU 指标（MFU = Model FLOPs Utilization，衡量 GPU 利用率）</td>
+</tr>
+<tr>
+<td><code>--show-hidden-metrics-for-version</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>显示从指定版本起隐藏的已弃用指标。例：<code>0.7</code> 可临时恢复 v0.7 起隐藏的旧指标</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_26">追踪与日志<a class="headerlink" href="#_26" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--enable-layerwise-nvtx-tracing</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>逐层 NVTX 追踪。在每个层/模块执行时打 NVTX 标记（含输入输出 shape）。需禁用 CUDA 图</td>
+</tr>
+<tr>
+<td><code>--enable-logging-iteration-details</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>详细记录每次迭代信息（context/generation 请求数、token 数、CPU 时间）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="schedulerconfig">SchedulerConfig — 调度器<a class="headerlink" href="#schedulerconfig" title="Permanent link">&para;</a></h2>
+<p>控制 Continuous Batching 的行为——如何将请求打包成批次、如何排序。</p>
+<h3 id="_27">并发控制<a class="headerlink" href="#_27" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--max-num-seqs</code></td>
+<td><code>int</code></td>
+<td>自动</td>
+<td><strong>最大并发序列数</strong>（单次迭代最多处理的序列数）</td>
+</tr>
+<tr>
+<td><code>--max-num-batched-tokens</code></td>
+<td><code>int</code>/<code>str</code></td>
+<td>自动</td>
+<td><strong>单次迭代最大处理 token 数</strong>。影响显存峰值和计算吞吐。支持 <code>1k</code>/<code>1K</code> 等缩写。不设时自动推导</td>
+</tr>
+</tbody>
+</table>
+<h3 id="chunked-prefill">Chunked Prefill<a class="headerlink" href="#chunked-prefill" title="Permanent link">&para;</a></h3>
+<p>将大的 prefill 请求拆分成多个小块，与 decode 请求交错执行。避免单个长 prefill 阻塞所有 decode 请求（改善 TTFT）。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--enable-chunked-prefill</code></td>
+<td><code>bool</code></td>
+<td><code>True</code></td>
+<td>启用分块预填充。当 prefill 的 token 数超过剩余 <code>max_num_batched_tokens</code> 时分块</td>
+</tr>
+<tr>
+<td><code>--max-num-partial-prefills</code></td>
+<td><code>int</code></td>
+<td><code>1</code></td>
+<td>最多同时进行多少个分块 prefill 的序列</td>
+</tr>
+<tr>
+<td><code>--max-long-partial-prefills</code></td>
+<td><code>int</code></td>
+<td><code>1</code></td>
+<td>最多同时进行多少个"长 prompt"（超阈值）的分块 prefill。设得比 <code>max_num_partial_prefills</code> 小可以让短 prompt 插队，降低短请求延迟</td>
+</tr>
+<tr>
+<td><code>--long-prefill-token-threshold</code></td>
+<td><code>int</code></td>
+<td><code>0</code></td>
+<td>长 prompt 的 token 数阈值。超过此值的 prefill 被视为"长"</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_28">调度策略<a class="headerlink" href="#_28" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--scheduling-policy</code></td>
+<td><code>str</code></td>
+<td><code>fcfs</code></td>
+<td>调度策略：<code>fcfs</code>=先来先服务；<code>priority</code>=按请求优先级排序（值越小越优先，平局按到达时间）</td>
+</tr>
+<tr>
+<td><code>--async-scheduling</code></td>
+<td><code>bool</code></td>
+<td><code>True</code></td>
+<td>异步调度。GPU 执行当前批次时 CPU 预先准备下一批次的调度。避免 GPU 空闲气泡，改善延迟和吞吐</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_29">流式输出<a class="headerlink" href="#_29" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--stream-interval</code></td>
+<td><code>int</code></td>
+<td><code>1</code></td>
+<td>流式输出缓冲区大小（token 数）。<code>1</code>=每个 token 立即推送（最流畅）；<code>10</code>=攒够 10 个一起推（减少 host 开销，可能提高吞吐）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_30">其他<a class="headerlink" href="#_30" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--disable-hybrid-kv-cache-manager</code></td>
+<td><code>bool</code></td>
+<td><code>None</code></td>
+<td><code>True</code>=所有注意力层分配相同大小的 KV Cache（即使有 full attention 和 sliding window attention 混合）。<code>None</code>=自动根据环境和配置决定</td>
+</tr>
+<tr>
+<td><code>--disable-chunked-mm-input</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>多模态输入不分块。当 chunked prefill 开启且有混合 prompt（文本+图像 tokens 交错），确保图像 token 不被拆散</td>
+</tr>
+<tr>
+<td><code>--scheduler-cls</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>自定义调度器类路径。默认用 <code>vllm.v1.core.sched.scheduler.Scheduler</code>。格式：<code>"mod.custom_class"</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="compilationconfig-cuda">CompilationConfig — 编译与 CUDA 图<a class="headerlink" href="#compilationconfig-cuda" title="Permanent link">&para;</a></h2>
+<p>控制 torch.compile（Inductor）和 CUDA Graph 的编译优化行为。通过 <code>-cc</code> 简写传入。</p>
+<h3 id="_31">便捷写法<a class="headerlink" href="#_31" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Bash</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-4-1"><span class="c1"># 完全禁用（等价于 --enforce-eager）</span>
+</span><span id="__span-4-2">-cc.mode<span class="o">=</span>none<span class="w"> </span>-cc.cudagraph_mode<span class="o">=</span>none
+</span><span id="__span-4-3">
+</span><span id="__span-4-4"><span class="c1"># 仅禁用 CUDA 图</span>
+</span><span id="__span-4-5">-cc.cudagraph_mode<span class="o">=</span>none
+</span><span id="__span-4-6">
+</span><span id="__span-4-7"><span class="c1"># 仅禁用 inductor</span>
+</span><span id="__span-4-8">-cc.mode<span class="o">=</span>none
+</span><span id="__span-4-9">
+</span><span id="__span-4-10"><span class="c1"># 自定义 CUDA 图捕获大小</span>
+</span><span id="__span-4-11">-cc.cudagraph_capture_sizes<span class="o">=</span><span class="s1">&#39;[1,2,4,8]&#39;</span>
+</span><span id="__span-4-12">
+</span><span id="__span-4-13"><span class="c1"># 完整 JSON</span>
+</span><span id="__span-4-14">-cc<span class="o">=</span><span class="s1">&#39;{&quot;mode&quot;:3,&quot;cudagraph_capture_sizes&quot;:[1,2,4,8,16,32],&quot;backend&quot;:&quot;inductor&quot;}&#39;</span>
+</span></code></pre></div></td></tr></table></div>
+<h3 id="_32">顶层编译控制<a class="headerlink" href="#_32" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数 (via JSON)</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mode</code></td>
+<td><code>int</code></td>
+<td><code>None</code></td>
+<td>编译模式：<code>0</code>(NONE)=无；<code>1</code>(DYNAMO_ONCE)=一次 dynamo；<code>2</code>(DYNAMO_AS_NEEDED)=按需；<code>3</code>(DYNAMO_FULL)=完整 dynamo+inductor</td>
+</tr>
+<tr>
+<td><code>backend</code></td>
+<td><code>str</code></td>
+<td><code>inductor</code></td>
+<td>编译后端，默认 inductor</td>
+</tr>
+<tr>
+<td><code>custom_ops</code></td>
+<td><code>list[str]</code></td>
+<td><code>[]</code></td>
+<td>自定义算子列表（<code>"all"</code>=全部开启）</td>
+</tr>
+<tr>
+<td><code>splitting_ops</code></td>
+<td><code>list[str]</code></td>
+<td><code>None</code></td>
+<td>需要拆分编译的算子</td>
+</tr>
+<tr>
+<td><code>compile_mm_encoder</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>是否编译多模态编码器</td>
+</tr>
+<tr>
+<td><code>compile_sizes</code></td>
+<td><code>list[int]</code></td>
+<td><code>None</code></td>
+<td>为特定 batch size 编译（完全静态图，更多优化空间）</td>
+</tr>
+<tr>
+<td><code>compile_ranges_endpoints</code></td>
+<td><code>list[int]</code></td>
+<td><code>None</code></td>
+<td>编译范围端点（动态图，适配多种 batch size）</td>
+</tr>
+<tr>
+<td><code>debug_dump_path</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>调试输出路径</td>
+</tr>
+<tr>
+<td><code>cache_dir</code></td>
+<td><code>str</code></td>
+<td><code>""</code></td>
+<td>编译缓存目录（跨进程复用编译结果）</td>
+</tr>
+<tr>
+<td><code>compile_cache_save_format</code></td>
+<td><code>str</code></td>
+<td><code>binary</code></td>
+<td>缓存保存格式</td>
+</tr>
+<tr>
+<td><code>local_cache_dir</code></td>
+<td><code>str</code></td>
+<td><code>None</code></td>
+<td>本地缓存目录（节点间共享时）</td>
+</tr>
+<tr>
+<td><code>fast_moe_cold_start</code></td>
+<td><code>bool</code></td>
+<td><code>None</code></td>
+<td>MoE 快速冷启动</td>
+</tr>
+<tr>
+<td><code>static_all_moe_layers</code></td>
+<td><code>list</code></td>
+<td><code>[]</code></td>
+<td>静态 MoE 层列表</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cuda">CUDA 图<a class="headerlink" href="#cuda" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cudagraph_mode</code></td>
+<td><code>int</code></td>
+<td><code>None</code></td>
+<td>CUDA 图模式：<code>0</code>(NONE)=不使用；<code>1</code>(FULL_DECODE_ONLY)=仅 decode 阶段；<code>2</code>(FULL)=全部使用</td>
+</tr>
+<tr>
+<td><code>cudagraph_capture_sizes</code></td>
+<td><code>list[int]</code></td>
+<td><code>None</code></td>
+<td>手动指定捕获的 batch size。CUDA 图只能在<strong>相同 batch size</strong> 下回放。不设则自动生成：<code>[1, 2, 4] + list(range(8, 256, 8)) + list(range(256, max_cudagraph_capture_size+1, 16))</code></td>
+</tr>
+<tr>
+<td><code>max_cudagraph_capture_size</code></td>
+<td><code>int</code></td>
+<td><code>min(max_num_seqs×2, 512)</code></td>
+<td>最大 CUDA 图捕获大小。限制这个值防止小内存下 OOM 和启动时间过长</td>
+</tr>
+<tr>
+<td><code>cudagraph_num_of_warmups</code></td>
+<td><code>int</code></td>
+<td><code>0</code></td>
+<td>捕获前预热次数</td>
+</tr>
+<tr>
+<td><code>cudagraph_copy_inputs</code></td>
+<td><code>bool</code></td>
+<td><code>False</code></td>
+<td>是否拷贝输入（用于非 CUDA 图模式）</td>
+</tr>
+<tr>
+<td><code>cudagraph_specialize_lora</code></td>
+<td><code>bool</code></td>
+<td><code>True</code></td>
+<td>是否为不同 LoRA 适配器特化 CUDA 图</td>
+</tr>
+</tbody>
+</table>
+<h3 id="inductor">Inductor 编译<a class="headerlink" href="#inductor" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>inductor_compile_config</code></td>
+<td><code>dict</code></td>
+<td>见下方</td>
+<td>inductor 编译配置。默认：<code>{"enable_auto_functionalized_v2": false, "combo_kernels": true, "benchmark_combo_kernel": true}</code></td>
+</tr>
+<tr>
+<td><code>inductor_passes</code></td>
+<td><code>dict</code></td>
+<td><code>{}</code></td>
+<td>自定义 inductor passes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_33">其他<a class="headerlink" href="#_33" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pass_config</code></td>
+<td><code>dict</code></td>
+<td><code>{}</code></td>
+<td>自定义融合/转换 passes：<code>fuse_norm_quant</code>、<code>fuse_act_quant</code>、<code>fuse_attn_quant</code>、<code>enable_sp</code>、<code>fuse_gemm_comms</code>、<code>fuse_allreduce_rms</code></td>
+</tr>
+<tr>
+<td><code>dynamic_shapes_config</code></td>
+<td><code>dict</code></td>
+<td><code>{"type": "backed", ...}</code></td>
+<td>动态形状配置：<code>type</code>=动态形状类型；<code>evaluate_guards</code>=是否评估 guard；<code>assume_32_bit_indexing</code>=假设 32 位索引</td>
+</tr>
+<tr>
+<td><code>use_inductor_graph_partition</code></td>
+<td><code>bool</code></td>
+<td><code>None</code></td>
+<td>是否使用 inductor 图分区</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_34">便捷启动参数<a class="headerlink" href="#_34" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--cudagraph-capture-sizes</code></td>
+<td><code>list[int]</code></td>
+<td><code>None</code></td>
+<td>CUDA 图捕获的 batch size 列表（等价于 <code>-cc.cudagraph_capture_sizes</code>）</td>
+</tr>
+<tr>
+<td><code>--max-cudagraph-capture-size</code></td>
+<td><code>int</code></td>
+<td><code>None</code></td>
+<td>最大 CUDA 图捕获大小（等价于 <code>-cc.max_cudagraph_capture_size</code>）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="kernelconfig">KernelConfig — 内核选择<a class="headerlink" href="#kernelconfig" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--moe-backend</code></td>
+<td><code>str</code></td>
+<td><code>auto</code></td>
+<td>MoE expert 计算内核后端。<code>auto</code>=自动选择；<code>triton</code>=Triton 融合 MoE 内核；<code>deep_gemm</code>=DeepGEMM（仅 FP8 块量化）；<code>cutlass</code>=vLLM CUTLASS 内核；<code>flashinfer_trtllm</code>=FlashInfer + TRTLLM-GEN；<code>flashinfer_cutlass</code>=FlashInfer + CUTLASS；<code>flashinfer_cutedsl</code>=FlashInfer + CuteDSL（仅 FP4）；<code>marlin</code>=Marlin（权重量化专用）；<code>aiter</code>=AMD AITer（ROCm 专用）</td>
+</tr>
+<tr>
+<td><code>--enable-flashinfer-autotune</code></td>
+<td><code>bool</code></td>
+<td><code>None</code></td>
+<td>在内核预热时运行 FlashInfer 自动调优，找到最优 kernel 参数</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="vllmconfig">VllmConfig — 顶级配置容器<a class="headerlink" href="#vllmconfig" title="Permanent link">&para;</a></h2>
+<p><code>VllmConfig</code> 是所有子配置的容器。vLLM 内部的统一配置对象。</p>
+<h3 id="_35">性能模式<a class="headerlink" href="#_35" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--performance-mode</code></td>
+<td><code>str</code></td>
+<td><code>balanced</code></td>
+<td>性能模式：<br><code>balanced</code>=默认，延迟和吞吐的平衡<br><code>interactivity</code>=低延迟优先（小 batch CUDA 图、延迟优化 kernel）<br><code>throughput</code>=吞吐优先（大 CUDA 图、激进批处理、吞吐优化 kernel）</td>
+</tr>
+<tr>
+<td><code>--optimization-level</code></td>
+<td><code>int</code></td>
+<td><code>O2</code></td>
+<td>优化级别（O0 最快启动，O3 最佳性能）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_36">投机解码<a class="headerlink" href="#_36" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--speculative-config</code></td>
+<td><code>JSON</code></td>
+<td><code>None</code></td>
+<td>投机解码配置。需要一个较小的 draft model 快速生成候选 token，主模型并行验证。例：<code>{"model": "/path/to/draft-model", "num_speculative_tokens": 5, "method": "ngram"}</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="_37">分析与调试<a class="headerlink" href="#_37" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--profiler-config</code></td>
+<td><code>JSON</code></td>
+<td>见下方</td>
+<td>Torch Profiler 配置。默认值包含：<code>profiler=None</code>（不启用）、<code>torch_profiler_dir=''</code>、<code>torch_profiler_with_stack=False</code>、<code>torch_profiler_with_flops=False</code>、<code>torch_profiler_use_gzip=True</code>、<code>torch_profiler_record_shapes=False</code>、<code>torch_profiler_with_memory=False</code>、<code>ignore_frontend=False</code>、<code>delay_iterations=0</code>、<code>max_iterations=0</code>、<code>warmup_iterations=0</code>、<code>active_iterations=5</code>、<code>wait_iterations=0</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="_38">结构化输出<a class="headerlink" href="#_38" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--structured-outputs-config</code></td>
+<td><code>JSON</code></td>
+<td>见下方</td>
+<td>结构化输出配置。默认值：<code>{"backend": "auto", "disable_any_whitespace": false, "disable_additional_properties": false, "reasoning_parser": "", "reasoning_parser_plugin": "", "enable_in_reasoning": false}</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="_39">注意力详细配置<a class="headerlink" href="#_39" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--attention-config / -ac</code></td>
+<td><code>JSON</code></td>
+<td>见 AttentionConfig</td>
+<td>注意力配置 JSON。子字段见 AttentionConfig 节</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_40">编译配置<a class="headerlink" href="#_40" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--compilation-config / -cc</code></td>
+<td><code>JSON</code></td>
+<td>见 CompilationConfig</td>
+<td>编译配置 JSON。支持简写 <code>-cc.key=value</code>。子字段见 CompilationConfig 节</td>
+</tr>
+</tbody>
+</table>
+<h3 id="kv">分布式 KV/权重传输<a class="headerlink" href="#kv" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--kv-transfer-config</code></td>
+<td><code>JSON</code></td>
+<td><code>None</code></td>
+<td>分布式 KV Cache 传输配置（disaggregated prefill 场景）</td>
+</tr>
+<tr>
+<td><code>--ec-transfer-config</code></td>
+<td><code>JSON</code></td>
+<td><code>None</code></td>
+<td>分布式 EC（Expert Cache）传输配置</td>
+</tr>
+<tr>
+<td><code>--kv-events-config</code></td>
+<td><code>JSON</code></td>
+<td><code>None</code></td>
+<td>KV 事件发布配置</td>
+</tr>
+<tr>
+<td><code>--weight-transfer-config</code></td>
+<td><code>JSON</code></td>
+<td><code>None</code></td>
+<td>RL 训练中的权重传输配置</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="json">JSON 参数语法<a class="headerlink" href="#json" title="Permanent link">&para;</a></h2>
+<p>vLLM 的 JSON 参数支持两种等价的 CLI 写法：</p>
+<div class="language-bash highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Bash</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span>
+<span class="normal">9</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-5-1"><span class="c1"># 方式 1: JSON 字符串</span>
+</span><span id="__span-5-2">--json-arg<span class="w"> </span><span class="s1">&#39;{&quot;key1&quot;: &quot;value1&quot;, &quot;key2&quot;: {&quot;key3&quot;: &quot;value2&quot;}}&#39;</span>
+</span><span id="__span-5-3">
+</span><span id="__span-5-4"><span class="c1"># 方式 2: 点号展开（等价）</span>
+</span><span id="__span-5-5">--json-arg.key1<span class="w"> </span>value1<span class="w"> </span>--json-arg.key2.key3<span class="w"> </span>value2
+</span><span id="__span-5-6">
+</span><span id="__span-5-7"><span class="c1"># 列表元素用 + 追加</span>
+</span><span id="__span-5-8">--json-arg<span class="w"> </span><span class="s1">&#39;{&quot;key4&quot;: [&quot;value3&quot;, &quot;value4&quot;, &quot;value5&quot;]}&#39;</span>
+</span><span id="__span-5-9">--json-arg.key4+<span class="w"> </span>value3<span class="w"> </span>--json-arg.key4+<span class="o">=</span><span class="s1">&#39;value4,value5&#39;</span>
+</span></code></pre></div></td></tr></table></div>
+<p>常见场景：
+<div class="language-bash highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">Bash</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span>
+<span class="normal">8</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-6-1"><span class="c1"># 自定义 CUDA 图</span>
+</span><span id="__span-6-2">-cc.cudagraph_capture_sizes+<span class="w"> </span><span class="m">1</span><span class="w"> </span>-cc.cudagraph_capture_sizes+<span class="o">=</span><span class="s1">&#39;2,4,8&#39;</span>
+</span><span id="__span-6-3">
+</span><span id="__span-6-4"><span class="c1"># 覆盖生成配置</span>
+</span><span id="__span-6-5">--override-generation-config.temperature<span class="w"> </span><span class="m">0</span>.6<span class="w"> </span>--override-generation-config.max_new_tokens<span class="w"> </span><span class="m">1024</span>
+</span><span id="__span-6-6">
+</span><span id="__span-6-7"><span class="c1"># 投机解码</span>
+</span><span id="__span-6-8">--speculative-config<span class="w"> </span><span class="s1">&#39;{&quot;model&quot;:&quot;/path/to/draft&quot;,&quot;num_speculative_tokens&quot;:5}&#39;</span>
+</span></code></pre></div></td></tr></table></div></p>
+<hr />
+<h2 id="_41">常用场景速查表<a class="headerlink" href="#_41" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>关键参数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>基础单卡</strong></td>
+<td><code>--max-model-len 2048 --gpu-memory-utilization 0.9 --max-num-seqs 32</code></td>
+</tr>
+<tr>
+<td><strong>24GB 单卡 7B</strong></td>
+<td><code>--max-model-len 8192 --gpu-memory-utilization 0.9</code></td>
+</tr>
+<tr>
+<td><strong>多卡大模型</strong></td>
+<td><code>--tensor-parallel-size N</code></td>
+</tr>
+<tr>
+<td><strong>超长上下文</strong></td>
+<td><code>--prefill-context-parallel-size 2 --decode-context-parallel-size 2</code></td>
+</tr>
+<tr>
+<td><strong>量化模型</strong></td>
+<td><code>--quantization awq</code> / <code>--quantization fp8</code></td>
+</tr>
+<tr>
+<td><strong>思考模型</strong></td>
+<td><code>--enable-reasoning --reasoning-parser deepseek_r1</code></td>
+</tr>
+<tr>
+<td><strong>LoRA 切换</strong></td>
+<td><code>--enable-lora --max-loras 4 --max-lora-rank 64</code></td>
+</tr>
+<tr>
+<td><strong>生产部署</strong></td>
+<td><code>--api-key sk-xxx --disable-fastapi-docs</code></td>
+</tr>
+<tr>
+<td><strong>多节点</strong></td>
+<td><code>--nnodes 2 --node-rank 0 --distributed-executor-backend ray</code></td>
+</tr>
+<tr>
+<td><strong>投机解码</strong></td>
+<td><code>--speculative-config '{"model":"draft-path","num_speculative_tokens":5}'</code></td>
+</tr>
+<tr>
+<td><strong>CPU 卸载</strong></td>
+<td><code>--cpu-offload-gb 8</code></td>
+</tr>
+<tr>
+<td><strong>KV Cache 减半</strong></td>
+<td><code>--kv-cache-dtype fp8</code></td>
+</tr>
+<tr>
+<td><strong>服务器监控</strong></td>
+<td><code>--otlp-traces-endpoint http://jaeger:4317</code></td>
+</tr>
+<tr>
+<td><strong>HTTPS</strong></td>
+<td><code>--ssl-certfile cert.pem --ssl-keyfile key.pem</code></td>
+</tr>
+<tr>
+<td><strong>YAML 配置</strong></td>
+<td><code>--config config.yaml</code></td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.top", "navigation.indexes", "navigation.expand", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit", "navigation.path"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../../mkdocs/javascripts/katex.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/contrib/auto-render.min.js"></script>
+      
+    
+  </body>
+</html>
